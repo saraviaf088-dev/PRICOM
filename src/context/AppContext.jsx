@@ -1,0 +1,408 @@
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { PRODUCTS as initialProducts } from '../data/products';
+import { ARTICLES } from '../data/articles';
+import { CONFIG } from '../config';
+import { storage } from '../storage';
+import confetti from 'canvas-confetti';
+
+const AppContext = createContext();
+
+export function AppProvider({ children }) {
+  // ── Products Store (editable by Admin) ──
+  const [products, setProducts] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.PRODUCTS, initialProducts)
+  );
+
+  // ── Cart Store ──
+  const [cart, setCart] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.CART, [])
+  );
+
+  // ── Wishlist Store ──
+  const [wishlist, setWishlist] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.WISHLIST, [])
+  );
+
+  // ── Comparator Store (up to 4 products) ──
+  const [comparator, setComparator] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.COMPARATOR, [])
+  );
+
+  // ── Theme Store ──
+  const [theme, setTheme] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.THEME, 'light')
+  );
+
+  // ── Search & Filters Store ──
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchHistory, setSearchHistory] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.SEARCH_HISTORY, [
+      'Sofás Sealy', 'Sofá cama Queen', 'Recliner Gameday', 'Santa Cruz',
+    ])
+  );
+
+  const initialFilterState = {
+    category: 'all',
+    subCategory: 'all',
+    brand: 'all',
+    minPrice: 0,
+    maxPrice: 30000,
+    color: 'all',
+    material: 'all',
+    style: 'all',
+    availability: 'all',
+    isOffer: false,
+    isNew: false,
+    location: 'all',
+    sortBy: 'relevance',
+  };
+
+  const [filters, setFilters] = useState(initialFilterState);
+
+  // ── Active Modals & Views ──
+  const [activeModal, setActiveModal] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [checkoutStep, setCheckoutStep] = useState(1);
+
+  // ── User Profile Store ──
+  const [user, setUser] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.USER, {
+      isLoggedIn: false,
+      name: 'Fabiola Morales',
+      email: 'fabiola.morales@ejemplo.bo',
+      phone: '+591 77312345',
+      nit: '4589210014',
+      city: 'Santa Cruz de la Sierra',
+      address: 'Calle Los Cusis #240, Barrio Sirari',
+      orders: [
+        {
+          id: 'PR-89214',
+          date: '12/08/2026',
+          total: 9500,
+          status: 'Entregado',
+          items: [{ name: 'Sealy Santa Cruz Seafoam', quantity: 1, price: 9500 }],
+        },
+      ],
+    })
+  );
+
+  // ── Toast Notifications ──
+  const [toasts, setToasts] = useState([]);
+
+  // ── Admin Auth ──
+  const [isAdminAuth, setIsAdminAuth] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.ADMIN_AUTH, false)
+  );
+
+  // ═══════════════════════════════════════════
+  // PERSISTENCE EFFECTS (safe localStorage)
+  // ═══════════════════════════════════════════
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.PRODUCTS, products); }, [products]);
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.CART, cart); }, [cart]);
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.WISHLIST, wishlist); }, [wishlist]);
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.COMPARATOR, comparator); }, [comparator]);
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.SEARCH_HISTORY, searchHistory); }, [searchHistory]);
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.USER, user); }, [user]);
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.ADMIN_AUTH, isAdminAuth); }, [isAdminAuth]);
+
+  // Theme synchronization with HTML tag
+  useEffect(() => {
+    storage.set(CONFIG.STORAGE_KEYS.THEME, theme);
+    const root = document.documentElement;
+    if (theme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    } else {
+      root.setAttribute('data-theme', theme);
+    }
+  }, [theme]);
+
+  // ═══════════════════════════════════════════
+  // DERIVED VALUES (useMemo)
+  // ═══════════════════════════════════════════
+  const cartTotal = useMemo(
+    () => cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
+    [cart]
+  );
+
+  const cartCount = useMemo(
+    () => cart.reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+
+  // ═══════════════════════════════════════════
+  // TOAST HELPERS
+  // ═══════════════════════════════════════════
+  const showToast = useCallback((title, message, type = 'success') => {
+    const id = Date.now() + Math.random().toString();
+    setToasts(prev => [...prev, { id, title, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, CONFIG.TOAST_DURATION_MS);
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  // ═══════════════════════════════════════════
+  // CART OPERATIONS
+  // ═══════════════════════════════════════════
+  const addToCart = useCallback((product, quantity = 1, options = {}) => {
+    const color = options.color || (product.colors && product.colors[0]?.name) || 'Estándar';
+    const material = options.material || product.material || 'Estándar';
+
+    setCart(prev => {
+      const existingIndex = prev.findIndex(
+        item => item.product.id === product.id && item.selectedColor === color
+      );
+      if (existingIndex > -1) {
+        const updated = [...prev];
+        updated[existingIndex].quantity += quantity;
+        return updated;
+      }
+      return [...prev, { product, quantity, selectedColor: color, selectedMaterial: material }];
+    });
+
+    try {
+      confetti({
+        particleCount: 35,
+        spread: 60,
+        origin: { y: 0.8 },
+        colors: ['#009eff', '#051063', '#ffffff'],
+      });
+    } catch {
+      // safe fallback
+    }
+
+    showToast('¡Añadido al carrito!', `${product.name} (${quantity} un.) se sumó a tu compra.`, 'success');
+  }, [showToast]);
+
+  const removeFromCart = useCallback((productId, selectedColor) => {
+    setCart(prev =>
+      prev.filter(item => !(item.product.id === productId && (!selectedColor || item.selectedColor === selectedColor)))
+    );
+    showToast('Producto eliminado', 'El artículo fue removido del carrito.', 'info');
+  }, [showToast]);
+
+  const updateCartQuantity = useCallback((productId, selectedColor, delta) => {
+    setCart(prev =>
+      prev
+        .map(item => {
+          if (item.product.id === productId && (!selectedColor || item.selectedColor === selectedColor)) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  }, []);
+
+  const clearCart = useCallback(() => setCart([]), []);
+
+  // ═══════════════════════════════════════════
+  // WISHLIST OPERATIONS
+  // ═══════════════════════════════════════════
+  const toggleWishlist = useCallback((productId) => {
+    setWishlist(prev => {
+      const exists = prev.includes(productId);
+      const prod = products.find(p => p.id === productId);
+      const name = prod ? prod.name : 'Producto';
+      if (exists) {
+        showToast('Eliminado de Favoritos', `${name} se quitó de tu lista.`, 'info');
+        return prev.filter(id => id !== productId);
+      } else {
+        showToast('¡Guardado en Favoritos!', `${name} se guardó en tu lista de deseos.`, 'success');
+        return [...prev, productId];
+      }
+    });
+  }, [products, showToast]);
+
+  const isInWishlist = useCallback((productId) => wishlist.includes(productId), [wishlist]);
+
+  // ═══════════════════════════════════════════
+  // COMPARATOR OPERATIONS
+  // ═══════════════════════════════════════════
+  const toggleComparator = useCallback((productId) => {
+    setComparator(prev => {
+      const exists = prev.includes(productId);
+      const prod = products.find(p => p.id === productId);
+      const name = prod ? prod.name : 'Producto';
+      if (exists) {
+        showToast('Removido del comparador', `${name} se quitó de la comparación.`, 'info');
+        return prev.filter(id => id !== productId);
+      } else {
+        if (prev.length >= CONFIG.MAX_COMPARATOR_ITEMS) {
+          showToast('Límite de comparación', `Puedes comparar hasta un máximo de ${CONFIG.MAX_COMPARATOR_ITEMS} productos a la vez.`, 'warning');
+          return prev;
+        }
+        showToast('Añadido al comparador', `${name} se agregó al comparador (Hasta ${CONFIG.MAX_COMPARATOR_ITEMS} productos).`, 'success');
+        return [...prev, productId];
+      }
+    });
+  }, [products, showToast]);
+
+  const isInComparator = useCallback((productId) => comparator.includes(productId), [comparator]);
+  const clearComparator = useCallback(() => setComparator([]), []);
+
+  // ═══════════════════════════════════════════
+  // SEARCH HISTORY
+  // ═══════════════════════════════════════════
+  const recordSearch = useCallback((term) => {
+    if (!term || !term.trim()) return;
+    const clean = term.trim();
+    setSearchHistory(prev =>
+      [clean, ...prev.filter(t => t.toLowerCase() !== clean.toLowerCase())].slice(0, CONFIG.MAX_SEARCH_HISTORY)
+    );
+  }, []);
+
+  // ═══════════════════════════════════════════
+  // PRODUCT MODALS
+  // ═══════════════════════════════════════════
+  const openProductDetail = useCallback((product) => {
+    setSelectedProduct(product);
+    setActiveModal('product-detail');
+    window.history.pushState(null, '', `#producto-${product.slug}`);
+  }, []);
+
+  const openQuickView = useCallback((product) => {
+    setSelectedProduct(product);
+    setActiveModal('quick-view');
+  }, []);
+
+  const openArticle = useCallback((article) => {
+    setSelectedArticle(article);
+    setActiveModal('article');
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setActiveModal(null);
+    if (window.location.hash.startsWith('#producto-')) {
+      window.history.replaceState(null, '', '#catalogo');
+    }
+  }, []);
+
+  // ═══════════════════════════════════════════
+  // FILTER RESET
+  // ═══════════════════════════════════════════
+  const resetFilters = useCallback(() => {
+    setFilters(initialFilterState);
+    setSearchQuery('');
+  }, []);
+
+  // ═══════════════════════════════════════════
+  // ADMIN OPERATIONS
+  // ═══════════════════════════════════════════
+  const adminLogin = useCallback((username, password) => {
+    if (username === CONFIG.ADMIN_CREDENTIALS.username && password === CONFIG.ADMIN_CREDENTIALS.password) {
+      setIsAdminAuth(true);
+      showToast('Acceso Autorizado', 'Bienvenido al panel de administración.', 'success');
+      return true;
+    }
+    showToast('Acceso Denegado', 'Credenciales de administrador incorrectas.', 'warning');
+    return false;
+  }, [showToast]);
+
+  const adminLogout = useCallback(() => {
+    setIsAdminAuth(false);
+    showToast('Sesión Cerrada', 'Has salido del panel de administración.', 'info');
+  }, [showToast]);
+
+  const adminAddProduct = useCallback((newProduct) => {
+    setProducts(prev => [newProduct, ...prev]);
+    showToast('Producto Creado', `${newProduct.name} fue añadido al catálogo.`, 'success');
+  }, [showToast]);
+
+  const adminUpdateProduct = useCallback((updatedProduct) => {
+    setProducts(prev => prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
+    showToast('Producto Actualizado', `${updatedProduct.name} fue modificado exitosamente.`, 'success');
+  }, [showToast]);
+
+  const adminDeleteProduct = useCallback((productId) => {
+    setProducts(prev => prev.filter(p => p.id !== productId));
+    showToast('Producto Eliminado', 'El producto fue dado de baja del catálogo.', 'info');
+  }, [showToast]);
+
+  // ═══════════════════════════════════════════
+  // PROVIDER VALUE
+  // ═══════════════════════════════════════════
+  const value = useMemo(() => ({
+    products,
+    cart,
+    wishlist,
+    comparator,
+    theme,
+    setTheme,
+    searchQuery,
+    setSearchQuery,
+    searchHistory,
+    recordSearch,
+    filters,
+    setFilters,
+    resetFilters,
+    activeModal,
+    setActiveModal,
+    selectedProduct,
+    setSelectedProduct,
+    selectedArticle,
+    setSelectedArticle,
+    checkoutStep,
+    setCheckoutStep,
+    user,
+    setUser,
+    toasts,
+    showToast,
+    removeToast,
+    addToCart,
+    removeFromCart,
+    updateCartQuantity,
+    clearCart,
+    cartTotal,
+    cartCount,
+    toggleWishlist,
+    isInWishlist,
+    toggleComparator,
+    isInComparator,
+    clearComparator,
+    openProductDetail,
+    openQuickView,
+    openArticle,
+    closeModal,
+    isAdminAuth,
+    adminLogin,
+    adminLogout,
+    adminAddProduct,
+    adminUpdateProduct,
+    adminDeleteProduct,
+  }), [
+    products, cart, wishlist, comparator, theme,
+    searchQuery, searchHistory, filters, activeModal,
+    selectedProduct, selectedArticle, checkoutStep,
+    user, toasts, cartTotal, cartCount, isAdminAuth,
+    showToast, removeToast, addToCart, removeFromCart,
+    updateCartQuantity, clearCart, toggleWishlist, isInWishlist,
+    toggleComparator, isInComparator, clearComparator,
+    openProductDetail, openQuickView, openArticle, closeModal,
+    recordSearch, resetFilters, setTheme, setSearchQuery,
+    setFilters, setActiveModal, setSelectedProduct,
+    setSelectedArticle, setCheckoutStep, setUser,
+    adminLogin, adminLogout, adminAddProduct,
+    adminUpdateProduct, adminDeleteProduct,
+  ]);
+
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export function useApp() {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useApp must be used within an AppProvider');
+  }
+  return context;
+}
