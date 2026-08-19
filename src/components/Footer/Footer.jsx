@@ -60,13 +60,9 @@ export default function Footer() {
           <div>
             <h4 className="footer-col-title">Categorías</h4>
             <ul className="footer-links">
-              <li><a href="#catalogo" onClick={() => handleCategoryClick('Sofás')} className="footer-link">Sofás de Sala</a></li>
               <li><a href="#catalogo" onClick={() => handleCategoryClick('Sofás Cama')} className="footer-link">Sofás Cama Sealy</a></li>
-              <li><a href="#catalogo" onClick={() => handleCategoryClick('Sillones')} className="footer-link">Sillones & Poltronas</a></li>
               <li><a href="#catalogo" onClick={() => handleCategoryClick('Reclinables')} className="footer-link">Recliners Zero-Gravity</a></li>
-              <li><a href="#catalogo" onClick={() => handleCategoryClick('Juegos de Sala')} className="footer-link">Juegos de Sala Modulares</a></li>
-              <li><a href="#catalogo" onClick={() => handleCategoryClick('Mesas')} className="footer-link">Mesas de Comedor</a></li>
-              <li><a href="#catalogo" onClick={() => handleCategoryClick('Decoración')} className="footer-link">Lámparas & Alfombras</a></li>
+              <li><a href="#catalogo" onClick={() => handleCategoryClick('Sillas')} className="footer-link">Sillas de Comedor</a></li>
             </ul>
           </div>
 

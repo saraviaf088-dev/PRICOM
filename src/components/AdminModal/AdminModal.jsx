@@ -21,8 +21,8 @@ export default function AdminModal() {
     id: '',
     name: '',
     brand: 'Sealy',
-    category: 'Sofás',
-    subCategory: 'Sofás de 3 Cuerpos',
+    category: 'Sofás Cama',
+    subCategory: 'Sofás Cama Queen',
     price: 9000,
     originalPrice: 15000,
     discount: 40,
@@ -206,13 +206,9 @@ export default function AdminModal() {
               <div className="form-group">
                 <label className="form-label">Categoría</label>
                 <select className="form-select" value={newProd.category} onChange={(e) => setNewProd({ ...newProd, category: e.target.value })}>
-                  <option value="Sofás">Sofás</option>
                   <option value="Sofás Cama">Sofás Cama</option>
-                  <option value="Sillones">Sillones</option>
-                  <option value="Reclinables">Reclinables</option>
-                  <option value="Juegos de Sala">Juegos de Sala</option>
-                  <option value="Mesas">Mesas</option>
-                  <option value="Decoración">Decoración</option>
+                  <option value="Reclinables">Recliners</option>
+                  <option value="Sillas">Sillas</option>
                 </select>
               </div>
               <div className="form-group">

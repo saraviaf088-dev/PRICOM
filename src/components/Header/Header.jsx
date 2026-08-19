@@ -4,21 +4,17 @@ import { CONFIG } from '../../config';
 import { CATEGORIES, NAVIGATION_LINKS } from '../../data/categories';
 import { 
   Search, Heart, ShoppingBag, Scale, User, Moon, Sun, Monitor, 
-  Menu, X, Phone, MessageCircle, ChevronDown, Sparkles, MapPin, Truck, ShieldCheck, Clock,
-  Home, Armchair, Lamp, Grid3X3, Tag, Compass, Headphones
+  Menu, X, Phone, MessageCircle, Sparkles, MapPin, Truck, ShieldCheck, Clock,
+  Home, Armchair, Tag, Compass, Headphones
 } from 'lucide-react';
 
 const NAV_ICONS = {
   'Inicio': Home,
-  'Muebles': Armchair,
-  'Sofás': Armchair,
-  'Reclinables': Armchair,
-  'Mesas': Grid3X3,
+  'Sofás Cama': Armchair,
+  'Recliners': Armchair,
   'Sillas': Armchair,
-  'Lámparas': Lamp,
-  'Alfombras': Grid3X3,
   'Ofertas': Tag,
-  'Inspirate': Compass,
+  'Inspírate': Compass,
   'Contacto': Headphones,
 };
 
@@ -35,7 +31,6 @@ export default function Header() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeMegaMenu, setActiveMegaMenu] = useState(null);
   const searchRef = useRef(null);
 
   // Lock body scroll when mobile drawer is open
@@ -88,7 +83,6 @@ export default function Header() {
   const handleCategoryNav = (catName) => {
     setFilters(prev => ({ ...prev, category: catName, subCategory: 'all' }));
     setIsMobileMenuOpen(false);
-    setActiveMegaMenu(null);
     const catalogEl = document.getElementById('catalogo');
     if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
   };
@@ -315,16 +309,12 @@ export default function Header() {
           </div>
         </div>
 
-        {/* 3. NAVIGATION BAR & MEGA MENU */}
+        {/* 3. NAVIGATION BAR */}
         <nav className="nav-bar">
           <div className="container">
             <ul className="nav-links">
               {NAVIGATION_LINKS.map((link, idx) => (
-                <li 
-                  key={idx} 
-                  onMouseEnter={() => link.hasMegaMenu && setActiveMegaMenu('muebles')}
-                  onMouseLeave={() => link.hasMegaMenu && setActiveMegaMenu(null)}
-                >
+                <li key={idx}>
                   <a 
                     href={link.path} 
                     className={`nav-link-item ${link.isHighlight ? 'highlight' : ''}`}
@@ -336,76 +326,11 @@ export default function Header() {
                     }}
                   >
                     <span>{link.label}</span>
-                    {link.hasMegaMenu && <ChevronDown size={14} />}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
-
-          {/* Mega Menu Dropdown */}
-          {activeMegaMenu === 'muebles' && (
-            <div 
-              className="mega-menu-overlay glass"
-              style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                right: 0,
-                backgroundColor: 'var(--bg-elevated)',
-                borderBottom: '1px solid var(--border-color)',
-                boxShadow: 'var(--shadow-xl)',
-                padding: '2rem 0',
-                zIndex: 90
-              }}
-              onMouseEnter={() => setActiveMegaMenu('muebles')}
-              onMouseLeave={() => setActiveMegaMenu(null)}
-            >
-              <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem' }}>
-                <div>
-                  <h4 style={{ fontSize: '0.95rem', color: 'var(--color-celeste)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Colección Sofás Sealy
-                  </h4>
-                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.88rem' }}>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Sofás')}>Sofás 3 Cuerpos Santa Cruz</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Sofás Cama')}>Sofás Cama Monterey</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Sofás Cama')}>Convertibles Kennedy Queen</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Sofás Cama')}>Sammy Queen Chocolate</a></li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 style={{ fontSize: '0.95rem', color: 'var(--color-celeste)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Reclinables & Salas
-                  </h4>
-                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.88rem' }}>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Reclinables')}>Gameday Zero-Gravity</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Juegos de Sala')}>Seccional Modular Klein</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Sillones')}>Poltronas de Lectura</a></li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 style={{ fontSize: '0.95rem', color: 'var(--color-celeste)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Comedor & Decoración
-                  </h4>
-                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.88rem' }}>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Mesas')}>Mesas de Mármol Aura</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Sillas')}>Sillas Nórdicas Oslo</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Lámparas')}>Lámparas de Pie en Latón</a></li>
-                    <li><a href="#catalogo" onClick={() => handleCategoryNav('Alfombras')}>Alfombras de Lana Altiplano</a></li>
-                  </ul>
-                </div>
-
-                <div style={{ background: 'var(--bg-secondary)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                  <img src="/images/SEALY-SANTACRUZ-SEAFOAM/1.jpg" alt="Destacado" style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', marginBottom: '0.75rem' }} />
-                  <div style={{ fontWeight: '700', fontSize: '0.9rem', color: 'var(--text-primary)' }}>Sealy Santa Cruz Seafoam</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--color-celeste)', fontWeight: '800' }}>Bs. 9.500 <span style={{ fontSize: '0.75rem', textDecoration: 'line-through', color: 'var(--text-muted)' }}>Bs. 18.999</span></div>
-                  <button className="btn btn-primary btn-sm" style={{ marginTop: '0.5rem', width: '100%' }} onClick={() => handleCategoryNav('Sofás')}>Ver Colección</button>
-                </div>
-              </div>
-            </div>
-          )}
         </nav>
 
       </header>
