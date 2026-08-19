@@ -9,6 +9,7 @@ import Categories from './components/Categories/Categories';
 import ProductGrid from './components/ProductGrid/ProductGrid';
 import OffersSection from './components/OffersSection/OffersSection';
 import InspirateSection from './components/InspirateSection/InspirateSection';
+import PromoterSection from './components/PromoterSection/PromoterSection';
 import AppDownloadSection from './components/AppDownloadSection/AppDownloadSection';
 import Footer from './components/Footer/Footer';
 import WhatsAppFloating from './components/WhatsAppFloating/WhatsAppFloating';
@@ -82,10 +83,13 @@ function MainApp() {
       {/* 6. Sección Editorial Inspírate (Revista de Diseño) */}
       <InspirateSection />
 
-      {/* 7. Sección Descarga de App ("TU TIENDA, SIEMPRE CONTIGO") */}
+      {/* 7. Trabaja con Nosotros - Programa de Promotores */}
+      <PromoterSection />
+
+      {/* 8. Sección Descarga de App ("TU TIENDA, SIEMPRE CONTIGO") */}
       <AppDownloadSection />
 
-      {/* 8. Footer Corporativo Completo */}
+      {/* 9. Footer Corporativo Completo */}
       <Footer />
 
       {/* 9. Floating Triggers */}

@@ -15,6 +15,7 @@ const NAV_ICONS = {
   'Sillas': Armchair,
   'Ofertas': Tag,
   'Inspírate': Compass,
+  'Trabaja con Nosotros': Headphones,
   'Contacto': Headphones,
 };
 

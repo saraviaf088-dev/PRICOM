@@ -47,5 +47,6 @@ export const NAVIGATION_LINKS = [
   { label: "Sillas", path: "#catalogo", filter: { category: "Sillas" } },
   { label: "Ofertas", path: "#ofertas", isHighlight: true },
   { label: "Inspírate", path: "#inspirate" },
+  { label: "Trabaja con Nosotros", path: "#promotores" },
   { label: "Contacto", path: "#contacto" }
 ];
