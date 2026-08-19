@@ -20,7 +20,7 @@ export default function WhatsAppFloating() {
 
   const handleSendMessage = () => {
     const textToSend = customText.trim() || defaultMessage;
-    const url = `https://wa.me/${selectedShowroom.whatsapp}?text=${encodeURIComponent(textToSend)}`;
+    const url = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(textToSend)}`;
     window.open(url, '_blank');
     setIsOpen(false);
   };
