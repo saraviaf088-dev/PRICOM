@@ -4,8 +4,23 @@ import { CONFIG } from '../../config';
 import { CATEGORIES, NAVIGATION_LINKS } from '../../data/categories';
 import { 
   Search, Heart, ShoppingBag, Scale, User, Moon, Sun, Monitor, 
-  Menu, X, Phone, MessageCircle, ChevronDown, Sparkles, MapPin, Truck, ShieldCheck, Clock
+  Menu, X, Phone, MessageCircle, ChevronDown, Sparkles, MapPin, Truck, ShieldCheck, Clock,
+  Home, Armchair, Lamp, Grid3X3, Tag, Compass, Headphones
 } from 'lucide-react';
+
+const NAV_ICONS = {
+  'Inicio': Home,
+  'Muebles': Armchair,
+  'Sofás': Armchair,
+  'Reclinables': Armchair,
+  'Mesas': Grid3X3,
+  'Sillas': Armchair,
+  'Lámparas': Lamp,
+  'Alfombras': Grid3X3,
+  'Ofertas': Tag,
+  'Inspirate': Compass,
+  'Contacto': Headphones,
+};
 
 export default function Header() {
   const { 
@@ -22,6 +37,16 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState(null);
   const searchRef = useRef(null);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
 
   // Close search dropdown on outside click
   useEffect(() => {
@@ -383,47 +408,130 @@ export default function Header() {
           )}
         </nav>
 
-        {/* Mobile Menu Dropdown */}
-        {isMobileMenuOpen && (
-          <div 
-            className="mobile-menu-panel"
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              backgroundColor: 'var(--bg-elevated)',
-              borderBottom: '1px solid var(--border-color)',
-              boxShadow: 'var(--shadow-xl)',
-              zIndex: 90,
-              padding: '1.5rem',
-              maxHeight: '70vh',
-              overflowY: 'auto'
-            }}
-          >
-            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              {NAVIGATION_LINKS.map((link, idx) => (
-                <li key={idx}>
-                  <a
-                    href={link.path}
-                    className={`nav-link-item ${link.isHighlight ? 'highlight' : ''}`}
-                    onClick={(e) => {
-                      if (link.filter) {
-                        e.preventDefault();
-                        handleCategoryNav(link.filter.category);
-                      }
-                      setIsMobileMenuOpen(false);
-                    }}
-                    style={{ padding: '0.75rem 0.5rem', display: 'block', borderBottom: '1px solid var(--border-color-light)' }}
-                  >
-                    <span>{link.label}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </header>
+
+      {/* Mobile Slide-Out Drawer */}
+      <div 
+        className={`mobile-drawer-backdrop ${isMobileMenuOpen ? 'open' : ''}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+      <div className={`mobile-drawer ${isMobileMenuOpen ? 'open' : ''}`}>
+        <div className="mobile-drawer-header">
+          <div className="mobile-drawer-brand">
+            <img src="/iconos/logo%20pricom.png" alt="PRICOM" />
+          </div>
+          <button 
+            className="mobile-drawer-close"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Cerrar menú"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <nav className="mobile-drawer-nav">
+          <div className="mobile-drawer-section-title">Navegación</div>
+          {NAVIGATION_LINKS.map((link, idx) => {
+            const Icon = NAV_ICONS[link.label] || Grid3X3;
+            return (
+              <a
+                key={idx}
+                href={link.path}
+                className={`mobile-drawer-nav-item ${link.isHighlight ? 'highlight' : ''}`}
+                onClick={(e) => {
+                  if (link.filter) {
+                    e.preventDefault();
+                    handleCategoryNav(link.filter.category);
+                  }
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                <Icon size={18} />
+                <span>{link.label}</span>
+              </a>
+            );
+          })}
+
+          <div className="mobile-drawer-divider" />
+
+          <div className="mobile-drawer-section-title">Mi Cuenta</div>
+          <button
+            className="mobile-drawer-nav-item"
+            onClick={() => { setActiveModal('wishlist'); setIsMobileMenuOpen(false); }}
+            style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <Heart size={18} />
+            <span>Favoritos</span>
+            {wishlist.length > 0 && (
+              <span style={{ marginLeft: 'auto', background: 'var(--color-celeste)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px' }}>
+                {wishlist.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            className="mobile-drawer-nav-item"
+            onClick={() => { setActiveModal('comparator'); setIsMobileMenuOpen(false); }}
+            style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <Scale size={18} />
+            <span>Comparar</span>
+            {comparator.length > 0 && (
+              <span style={{ marginLeft: 'auto', background: 'var(--color-azul-oscuro)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '99px' }}>
+                {comparator.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            className="mobile-drawer-nav-item"
+            onClick={() => { setActiveModal('auth'); setIsMobileMenuOpen(false); }}
+            style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <User size={18} />
+            <span>Mi Cuenta</span>
+          </button>
+
+          <div className="mobile-drawer-divider" />
+
+          <div className="mobile-drawer-section-title">Tema</div>
+          <div style={{ display: 'flex', gap: '0.5rem', padding: '0.5rem 1.25rem' }}>
+            <button 
+              className={`theme-btn ${theme === 'light' ? 'active' : ''}`}
+              onClick={() => setTheme('light')}
+              style={{ flex: 1, justifyContent: 'center', padding: '0.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: theme === 'light' ? 'var(--color-celeste)' : 'var(--bg-secondary)', color: theme === 'light' ? '#fff' : 'var(--text-primary)' }}
+            >
+              <Sun size={14} /> Claro
+            </button>
+            <button 
+              className={`theme-btn ${theme === 'dark' ? 'active' : ''}`}
+              onClick={() => setTheme('dark')}
+              style={{ flex: 1, justifyContent: 'center', padding: '0.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: theme === 'dark' ? 'var(--color-celeste)' : 'var(--bg-secondary)', color: theme === 'dark' ? '#fff' : 'var(--text-primary)' }}
+            >
+              <Moon size={14} /> Oscuro
+            </button>
+            <button 
+              className={`theme-btn ${theme === 'system' ? 'active' : ''}`}
+              onClick={() => setTheme('system')}
+              style={{ flex: 1, justifyContent: 'center', padding: '0.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: theme === 'system' ? 'var(--color-celeste)' : 'var(--bg-secondary)', color: theme === 'system' ? '#fff' : 'var(--text-primary)' }}
+            >
+              <Monitor size={14} /> Auto
+            </button>
+          </div>
+        </nav>
+
+        <div className="mobile-drawer-footer">
+          <a 
+            href={`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=Hola%20PRICOM,%20quiero%20informaci%C3%B3n%20sobre%20sus%20muebles`} 
+            target="_blank" 
+            rel="noreferrer"
+            className="mobile-drawer-whatsapp"
+          >
+            <MessageCircle size={18} />
+            Asesoría por WhatsApp
+          </a>
+        </div>
+      </div>
     </>
   );
 }
