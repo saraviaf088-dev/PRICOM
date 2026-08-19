@@ -5,7 +5,7 @@
 
 export const CONFIG = {
   // WhatsApp
-  WHATSAPP_NUMBER: '59175012345',
+  WHATSAPP_NUMBER: '59176740940',
   WHATSAPP_DEFAULT_MSG: 'Hola PRICOM, deseo información sobre los muebles del catálogo.',
 
   // Coupon
