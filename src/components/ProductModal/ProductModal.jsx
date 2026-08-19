@@ -9,7 +9,7 @@ import ProductCard from '../ProductCard/ProductCard';
 
 export default function ProductModal() {
   const { 
-    selectedProduct, closeModal, 
+    selectedProduct, setSelectedProduct, closeModal, 
     addToCart, isInWishlist, toggleWishlist, 
     isInComparator, toggleComparator, 
     products, setActiveModal, setCheckoutStep 
@@ -33,6 +33,24 @@ export default function ProductModal() {
       setActiveTab('descripcion');
     }
   }, [selectedProduct]);
+
+  // Handle color change: find matching variant product in same category by hex color
+  const handleColorChange = (colorName) => {
+    if (!selectedProduct) return;
+    const clickedColor = selectedProduct.colors?.find(c => c.name === colorName);
+    const clickedHex = clickedColor?.hex;
+    const variant = products.find(p =>
+      p.id !== selectedProduct.id &&
+      p.category === selectedProduct.category &&
+      p.colors &&
+      p.colors.some(c => c.hex === clickedHex || c.name === colorName)
+    );
+    if (variant) {
+      setSelectedProduct(variant);
+    } else {
+      setSelectedColor(colorName);
+    }
+  };
 
   if (!selectedProduct) return null;
 
@@ -91,6 +109,7 @@ export default function ProductModal() {
               onClick={() => setIsFullScreen(true)}
             >
               <img
+                key={selectedProduct.id}
                 src={selectedProduct.images[activeImageIndex]}
                 alt={selectedProduct.name}
                 className="pdp-main-image"
@@ -211,7 +230,7 @@ export default function ProductModal() {
             </p>
 
             {/* Color selector */}
-            {selectedProduct.colors && selectedProduct.colors.length > 0 && (
+            {selectedProduct.colors && selectedProduct.colors.length > 1 && (
               <div style={{ marginBottom: '1.25rem' }}>
                 <label className="form-label">
                   Color seleccionado: <strong>{selectedColor}</strong>
@@ -221,7 +240,7 @@ export default function ProductModal() {
                     <button
                       key={i}
                       className={`color-swatch-btn ${selectedColor === c.name ? 'active' : ''}`}
-                      onClick={() => setSelectedColor(c.name)}
+                      onClick={() => handleColorChange(c.name)}
                       style={{ backgroundColor: c.hex }}
                       title={c.name}
                     />

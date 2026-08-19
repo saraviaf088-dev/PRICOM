@@ -38,8 +38,9 @@ export default function ProductGrid() {
 
       // 5. Color
       if (filters.color !== 'all') {
-        const hasColor = product.colors && product.colors.some(c => 
-          c.name.toLowerCase().includes(filters.color.toLowerCase())
+        const hasColor = product.colors && product.colors.some(c =>
+          c.name.toLowerCase().includes(filters.color.toLowerCase()) ||
+          filters.color.toLowerCase().includes(c.name.toLowerCase())
         );
         if (!hasColor) return false;
       }

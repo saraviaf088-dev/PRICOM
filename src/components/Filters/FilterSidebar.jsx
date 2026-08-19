@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES, BRANDS } from '../../data/categories';
 import { Filter, RotateCcw, Check, Sparkles } from 'lucide-react';
@@ -16,6 +16,22 @@ export const COLOR_OPTIONS = [
   { name: 'Gris Perla', hex: '#a4a8ad' },
   { name: 'Noir / Negro', hex: '#1a1c20' }
 ];
+
+function useDynamicColors(products) {
+  return useMemo(() => {
+    const colorMap = new Map();
+    products.forEach(p => {
+      if (p.colors) {
+        p.colors.forEach(c => {
+          if (c.hex && !colorMap.has(c.hex)) {
+            colorMap.set(c.hex, c.name);
+          }
+        });
+      }
+    });
+    return Array.from(colorMap.entries()).map(([hex, name]) => ({ name, hex }));
+  }, [products]);
+}
 
 export const MATERIAL_OPTIONS = [
   'Lino Premium',
@@ -36,6 +52,7 @@ export const STYLE_OPTIONS = [
 
 export default function FilterSidebar({ isMobile = false, onCloseMobile }) {
   const { filters, setFilters, resetFilters, products } = useApp();
+  const dynamicColors = useDynamicColors(products);
 
   const handlePriceChange = (e, type) => {
     const val = Number(e.target.value);
@@ -149,7 +166,7 @@ export default function FilterSidebar({ isMobile = false, onCloseMobile }) {
             style={{ background: 'linear-gradient(45deg, #ccc, #fff)' }}
             title="Todos los colores"
           />
-          {COLOR_OPTIONS.map((c, i) => (
+          {dynamicColors.map((c, i) => (
             <button
               key={i}
               className={`color-swatch-btn ${filters.color.toLowerCase() === c.name.toLowerCase() ? 'active' : ''}`}
