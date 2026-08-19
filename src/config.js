@@ -4,6 +4,9 @@
 // ==========================================================================
 
 export const CONFIG = {
+  // API
+  API_URL: 'http://localhost:3001',
+
   // WhatsApp
   WHATSAPP_NUMBER: '59176740940',
   WHATSAPP_DEFAULT_MSG: 'Hola PRICOM, deseo información sobre los muebles del catálogo.',
@@ -22,6 +25,7 @@ export const CONFIG = {
     SEARCH_HISTORY: 'pricom_search_history',
     USER: 'pricom_user',
     ADMIN_AUTH: 'pricom_admin_auth',
+    ADMIN_TOKEN: 'pricom_admin_token',
     OFFERS_END: 'pricom_offers_end',
   },
 

@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "password": "$2a$10$o0RCP7UBIN0oiflkn5jiKe9L058sD9Hyk3mxfAGudIlgUMrCw8Yuq",
+    "role": "admin",
+    "createdAt": "2026-08-19T22:54:32.728Z"
+  }
+]

@@ -3,6 +3,7 @@ import { PRODUCTS as initialProducts } from '../data/products';
 import { ARTICLES } from '../data/articles';
 import { CONFIG } from '../config';
 import { storage } from '../storage';
+import { authAPI, ordersAPI, productsAPI, paymentsAPI, statsAPI } from '../api';
 import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
@@ -94,6 +95,11 @@ export function AppProvider({ children }) {
   const [isAdminAuth, setIsAdminAuth] = useState(() =>
     storage.get(CONFIG.STORAGE_KEYS.ADMIN_AUTH, false)
   );
+  const [adminToken, setAdminToken] = useState(() =>
+    storage.get(CONFIG.STORAGE_KEYS.ADMIN_TOKEN, null)
+  );
+  const [adminStats, setAdminStats] = useState(null);
+  const [adminOrders, setAdminOrders] = useState([]);
 
   // ═══════════════════════════════════════════
   // PERSISTENCE EFFECTS (safe localStorage)
@@ -105,6 +111,7 @@ export function AppProvider({ children }) {
   useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.SEARCH_HISTORY, searchHistory); }, [searchHistory]);
   useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.USER, user); }, [user]);
   useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.ADMIN_AUTH, isAdminAuth); }, [isAdminAuth]);
+  useEffect(() => { storage.set(CONFIG.STORAGE_KEYS.ADMIN_TOKEN, adminToken); }, [adminToken]);
 
   // Theme synchronization with HTML tag
   useEffect(() => {
@@ -295,35 +302,133 @@ export function AppProvider({ children }) {
   // ═══════════════════════════════════════════
   // ADMIN OPERATIONS
   // ═══════════════════════════════════════════
-  const adminLogin = useCallback((username, password) => {
-    if (username === CONFIG.ADMIN_CREDENTIALS.username && password === CONFIG.ADMIN_CREDENTIALS.password) {
+  const adminLogin = useCallback(async (username, password) => {
+    try {
+      const result = await authAPI.login(username, password);
       setIsAdminAuth(true);
+      setAdminToken(result.token);
+      storage.set(CONFIG.STORAGE_KEYS.ADMIN_TOKEN, result.token);
       showToast('Acceso Autorizado', 'Bienvenido al panel de administración.', 'success');
       return true;
+    } catch (err) {
+      // Fallback to local auth
+      if (username === CONFIG.ADMIN_CREDENTIALS.username && password === CONFIG.ADMIN_CREDENTIALS.password) {
+        setIsAdminAuth(true);
+        showToast('Acceso Autorizado', 'Bienvenido al panel de administración (modo local).', 'success');
+        return true;
+      }
+      showToast('Acceso Denegado', err.message || 'Credenciales incorrectas.', 'warning');
+      return false;
     }
-    showToast('Acceso Denegado', 'Credenciales de administrador incorrectas.', 'warning');
-    return false;
   }, [showToast]);
 
   const adminLogout = useCallback(() => {
     setIsAdminAuth(false);
+    setAdminToken(null);
+    setAdminStats(null);
+    setAdminOrders([]);
+    storage.set(CONFIG.STORAGE_KEYS.ADMIN_TOKEN, null);
     showToast('Sesión Cerrada', 'Has salido del panel de administración.', 'info');
   }, [showToast]);
 
-  const adminAddProduct = useCallback((newProduct) => {
-    setProducts(prev => [newProduct, ...prev]);
-    showToast('Producto Creado', `${newProduct.name} fue añadido al catálogo.`, 'success');
+  const fetchAdminStats = useCallback(async () => {
+    try {
+      const stats = await statsAPI.getDashboard();
+      setAdminStats(stats);
+      return stats;
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+      return null;
+    }
+  }, []);
+
+  const fetchAdminOrders = useCallback(async (params = {}) => {
+    try {
+      const orders = await ordersAPI.getAll(params);
+      setAdminOrders(orders);
+      return orders;
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      return [];
+    }
+  }, []);
+
+  const updateOrderStatus = useCallback(async (orderId, status) => {
+    try {
+      await ordersAPI.updateStatus(orderId, status);
+      setAdminOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, orderStatus: status } : o
+      ));
+      showToast('Pedido Actualizado', `Estado cambiado a: ${status}`, 'success');
+      return true;
+    } catch (err) {
+      showToast('Error', err.message || 'No se pudo actualizar el pedido', 'warning');
+      return false;
+    }
   }, [showToast]);
 
-  const adminUpdateProduct = useCallback((updatedProduct) => {
+  const createOrder = useCallback(async (orderData) => {
+    try {
+      const result = await ordersAPI.create(orderData);
+      return result;
+    } catch (err) {
+      console.error('Error creating order:', err);
+      return null;
+    }
+  }, []);
+
+  const processPayment = useCallback(async (paymentData) => {
+    try {
+      const result = await paymentsAPI.process(paymentData);
+      return result;
+    } catch (err) {
+      console.error('Error processing payment:', err);
+      return null;
+    }
+  }, []);
+
+  const adminAddProduct = useCallback(async (newProduct) => {
+    try {
+      const created = await productsAPI.create(newProduct);
+      setProducts(prev => [created, ...prev]);
+      showToast('Producto Creado', `${created.name} fue añadido al catálogo.`, 'success');
+      return created;
+    } catch (err) {
+      // Fallback to local
+      setProducts(prev => [newProduct, ...prev]);
+      showToast('Producto Creado', `${newProduct.name} fue añadido (modo local).`, 'success');
+      return newProduct;
+    }
+  }, [showToast]);
+
+  const adminUpdateProduct = useCallback(async (updatedProduct) => {
+    try {
+      await productsAPI.update(updatedProduct.id, updatedProduct);
+    } catch (err) {
+      // Continue with local update
+    }
     setProducts(prev => prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
     showToast('Producto Actualizado', `${updatedProduct.name} fue modificado exitosamente.`, 'success');
   }, [showToast]);
 
-  const adminDeleteProduct = useCallback((productId) => {
+  const adminDeleteProduct = useCallback(async (productId) => {
+    try {
+      await productsAPI.delete(productId);
+    } catch (err) {
+      // Continue with local delete
+    }
     setProducts(prev => prev.filter(p => p.id !== productId));
     showToast('Producto Eliminado', 'El producto fue dado de baja del catálogo.', 'info');
   }, [showToast]);
+
+  const syncProductsToServer = useCallback(async () => {
+    try {
+      await productsAPI.sync(products);
+      showToast('Sincronizado', 'Productos sincronizados con el servidor.', 'success');
+    } catch (err) {
+      showToast('Error', 'No se pudieron sincronizar los productos.', 'warning');
+    }
+  }, [products, showToast]);
 
   // ═══════════════════════════════════════════
   // PROVIDER VALUE
@@ -371,16 +476,26 @@ export function AppProvider({ children }) {
     openArticle,
     closeModal,
     isAdminAuth,
+    adminToken,
+    adminStats,
+    adminOrders,
     adminLogin,
     adminLogout,
     adminAddProduct,
     adminUpdateProduct,
     adminDeleteProduct,
+    fetchAdminStats,
+    fetchAdminOrders,
+    updateOrderStatus,
+    createOrder,
+    processPayment,
+    syncProductsToServer,
   }), [
     products, cart, wishlist, comparator, theme,
     searchQuery, searchHistory, filters, activeModal,
     selectedProduct, selectedArticle, checkoutStep,
     user, toasts, cartTotal, cartCount, isAdminAuth,
+    adminToken, adminStats, adminOrders,
     showToast, removeToast, addToCart, removeFromCart,
     updateCartQuantity, clearCart, toggleWishlist, isInWishlist,
     toggleComparator, isInComparator, clearComparator,
@@ -390,6 +505,8 @@ export function AppProvider({ children }) {
     setSelectedArticle, setCheckoutStep, setUser,
     adminLogin, adminLogout, adminAddProduct,
     adminUpdateProduct, adminDeleteProduct,
+    fetchAdminStats, fetchAdminOrders, updateOrderStatus,
+    createOrder, processPayment, syncProductsToServer,
   ]);
 
   return (

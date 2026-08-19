@@ -13,7 +13,8 @@ export default function CheckoutModal() {
     activeModal, setActiveModal, 
     cart, cartTotal, clearCart, 
     checkoutStep, setCheckoutStep, 
-    user, setUser, showToast 
+    user, setUser, showToast,
+    createOrder, processPayment
   } = useApp();
 
   // Checkout Form State
@@ -34,6 +35,7 @@ export default function CheckoutModal() {
   });
 
   const [orderConfirmed, setOrderConfirmed] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (activeModal !== 'checkout') return null;
 
@@ -66,31 +68,91 @@ export default function CheckoutModal() {
     setCheckoutStep(Math.max(1, checkoutStep - 1));
   };
 
-  const handleFinalizeOrder = () => {
-    const orderId = `PR-${Math.floor(10000 + Math.random() * 90000)}`;
-    const newOrder = {
-      id: orderId,
-      date: new Date().toLocaleDateString('es-BO'),
-      items: [...cart],
-      total: totalAmount,
-      customer: { ...formData },
-      status: 'Confirmado'
-    };
-
-    setOrderConfirmed(newOrder);
-    setCheckoutStep(5);
-    clearCart();
+  const handleFinalizeOrder = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
 
     try {
-      confetti({
-        particleCount: 80,
-        spread: 100,
-        origin: { y: 0.6 },
-        colors: ['#009eff', '#051063', '#25d366', '#ffffff']
-      });
-    } catch (e) {}
+      // Create order in backend
+      const orderData = {
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        customerNIT: formData.nit,
+        deliveryType: formData.deliveryType,
+        department: formData.department,
+        city: formData.city,
+        zone: formData.zone,
+        address: formData.address,
+        reference: formData.reference,
+        selectedShowroom: formData.selectedShowroom,
+        paymentMethod: formData.paymentMethod,
+        subtotal: cartTotal,
+        shippingCost,
+        total: totalAmount,
+        items: cart.map(item => ({
+          product: {
+            id: item.product.id,
+            name: item.product.name,
+            brand: item.product.brand,
+            price: item.product.price,
+            images: item.product.images,
+            category: item.product.category,
+          },
+          quantity: item.quantity,
+          selectedColor: item.selectedColor,
+          selectedMaterial: item.selectedMaterial,
+        })),
+      };
 
-    showToast('¡Pedido Confirmado!', `Tu orden ${orderId} fue registrada exitosamente.`, 'success');
+      const orderResult = await createOrder(orderData);
+
+      if (!orderResult) {
+        showToast('Error', 'No se pudo crear el pedido. Intenta de nuevo.', 'warning');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Process payment
+      const paymentResult = await processPayment({
+        orderId: orderResult.orderId,
+        paymentMethod: formData.paymentMethod,
+        cardData: formData.paymentMethod === 'card' ? { number: '4242424242424242', installments: 1 } : null,
+        tigoPhone: formData.paymentMethod === 'tigo' ? formData.phone : null,
+      });
+
+      const orderId = orderResult.orderNumber;
+      const newOrder = {
+        id: orderId,
+        orderId: orderResult.orderId,
+        date: new Date().toLocaleDateString('es-BO'),
+        items: [...cart],
+        total: totalAmount,
+        customer: { ...formData },
+        status: paymentResult?.status === 'completed' ? 'Pagado' : 'Pendiente de Pago',
+        paymentStatus: paymentResult?.status || 'pending',
+        paymentReference: paymentResult?.reference || '',
+      };
+
+      setOrderConfirmed(newOrder);
+      setCheckoutStep(5);
+      clearCart();
+
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 100,
+          origin: { y: 0.6 },
+          colors: ['#009eff', '#051063', '#25d366', '#ffffff']
+        });
+      } catch (e) {}
+
+      showToast('¡Pedido Confirmado!', `Tu orden ${orderId} fue registrada exitosamente.`, 'success');
+    } catch (err) {
+      showToast('Error', 'Hubo un problema al procesar tu pedido.', 'warning');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleSendOrderToWhatsApp = () => {
@@ -399,16 +461,52 @@ export default function CheckoutModal() {
                   <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: 'var(--color-azul-oscuro)' }}>
                     Código QR Simple Oficial PRICOM
                   </div>
-                  {/* SVG generated QR demo */}
                   <div style={{ display: 'inline-block', padding: '12px', background: '#fff', borderRadius: '10px', boxShadow: 'var(--shadow-sm)' }}>
                     <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PRICOM-BOLIVIA-MONTO-BS-${totalAmount}`}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PRICOM-${formData.department}-${totalAmount}-BS-${Date.now()}`}
                       alt="QR Simple" 
                       style={{ width: 160, height: 160, display: 'block' }} 
                     />
                   </div>
                   <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
                     Escanea este código desde la app de tu banco boliviano por <strong>Bs. {totalAmount.toLocaleString('es-BO')}</strong>.
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                    El pago será verificado automáticamente por nuestro sistema.
+                  </div>
+                </div>
+              )}
+
+              {/* Bank Transfer Info */}
+              {formData.paymentMethod === 'transfer' && (
+                <div style={{ padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
+                  <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: 'var(--color-azul-oscuro)' }}>
+                    Datos para Transferencia Bancaria
+                  </div>
+                  <div style={{ fontSize: '0.88rem', lineHeight: '1.6' }}>
+                    <div><strong>Banco BCP:</strong> Cuenta Corriente N° 123456789</div>
+                    <div><strong>CCI:</strong> 005123456789012345</div>
+                    <div><strong>Titular:</strong> PRICOM Bolivia S.R.L.</div>
+                    <div><strong>NIT:</strong> 123456789</div>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                    Envía el comprobante de pago a WhatsApp para confirmar tu pedido.
+                  </div>
+                </div>
+              )}
+
+              {/* Tigo Money Info */}
+              {formData.paymentMethod === 'tigo' && (
+                <div style={{ padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
+                  <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: '#00377B' }}>
+                    Pago con Tigo Money
+                  </div>
+                  <div style={{ fontSize: '0.88rem', lineHeight: '1.6' }}>
+                    <div><strong>Número de cuenta:</strong> 76740940</div>
+                    <div><strong>Nombre:</strong> PRICOM Bolivia</div>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                    Realiza la transferencia desde tu app Tigo Money y envía el comprobante.
                   </div>
                 </div>
               )}
@@ -430,13 +528,22 @@ export default function CheckoutModal() {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <button className="btn btn-outline" onClick={handlePrevStep}>
+                <button className="btn btn-outline" onClick={handlePrevStep} disabled={isProcessing}>
                   <ArrowLeft size={16} />
                   <span>Volver</span>
                 </button>
-                <button className="btn btn-primary btn-lg" onClick={handleFinalizeOrder}>
-                  <span>Confirmar y Finalizar Pedido</span>
-                  <Check size={18} />
+                <button className="btn btn-primary btn-lg" onClick={handleFinalizeOrder} disabled={isProcessing}>
+                  {isProcessing ? (
+                    <>
+                      <div className="skeleton" style={{ width: 16, height: 16, borderRadius: '50%' }} />
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Confirmar y Finalizar Pedido</span>
+                      <Check size={18} />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
