@@ -366,7 +366,7 @@ export const PRODUCTS = [
   {
     id: "sealy-gameday-rn",
     slug: "sillon-reclinable-sealy-gameday-rn",
-    name: "Sealy Gameday RN Noir",
+    name: "Sealy Gameday Negro",
     brand: "Sealy",
     category: "Reclinables",
     subCategory: "Sillones Reclinables de Lujo",
@@ -387,7 +387,7 @@ export const PRODUCTS = [
       "/images/SEALY-GAMEDAY-RN 11233/6.jpg"
     ],
     colors: [
-      { name: "Noir", hex: "#1a1c20", active: true }
+      { name: "Negro", hex: "#1a1c20", active: true }
     ],
     material: "Ecopiel Premium Negro Mate con tratamiento atérmico",
     style: "Ejecutivo / Moderno",
