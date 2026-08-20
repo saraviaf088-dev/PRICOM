@@ -1,13 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { CONFIG } from '../../config';
 import { Scale, X, ShoppingBag, MessageCircle, Star, Check, Trash2 } from 'lucide-react';
 
 export default function Comparator() {
-  const { 
-    comparator, clearComparator, toggleComparator, 
-    products, activeModal, setActiveModal, 
-    openProductDetail, addToCart 
+  const navigate = useNavigate();
+  const {
+    comparator, clearComparator, toggleComparator,
+    products, activeModal, setActiveModal,
+    addToCart
   } = useApp();
 
   const compProducts = products.filter(p => comparator.includes(p.id));

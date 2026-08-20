@@ -1,14 +1,16 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { CONFIG } from '../../config';
 import { Heart, Eye, Scale, MessageCircle, Star, ShoppingBag, ImageIcon } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 function ProductCard({ product }) {
+  const navigate = useNavigate();
   const {
     isInWishlist, toggleWishlist,
     isInComparator, toggleComparator,
-    openProductDetail, openQuickView,
+    openQuickView,
   } = useApp();
 
   const [imgError, setImgError] = useState(false);
@@ -32,11 +34,11 @@ function ProductCard({ product }) {
       {/* 1. Image Container */}
       <div
         className="product-card-image-container"
-        onClick={() => openProductDetail(product)}
+        onClick={() => navigate(`/producto/${product.slug}`)}
         role="button"
         tabIndex={0}
         aria-label={`Ver detalles de ${product.name}`}
-        onKeyDown={(e) => { if (e.key === 'Enter') openProductDetail(product); }}
+        onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/producto/${product.slug}`); }}
       >
         {imgError ? (
           <div style={{
@@ -118,10 +120,10 @@ function ProductCard({ product }) {
 
         <h3
           className="product-card-title"
-          onClick={() => openProductDetail(product)}
+          onClick={() => navigate(`/producto/${product.slug}`)}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter') openProductDetail(product); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/producto/${product.slug}`); }}
         >
           {product.name}
         </h3>
@@ -149,7 +151,7 @@ function ProductCard({ product }) {
         <div className="product-card-footer">
           <button
             className="btn btn-primary btn-card-buy"
-            onClick={() => openProductDetail(product)}
+            onClick={() => navigate(`/producto/${product.slug}`)}
           >
             Ver Producto
           </button>

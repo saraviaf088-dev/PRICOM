@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { CONFIG } from '../../config';
 import { CATEGORIES, NAVIGATION_LINKS } from '../../data/categories';
-import { 
-  Search, Heart, ShoppingBag, Scale, User, Moon, Sun, Monitor, 
+import {
+  Search, Heart, ShoppingBag, Scale, User, Moon, Sun, Monitor,
   Menu, X, Phone, MessageCircle, Sparkles, MapPin, Truck, ShieldCheck, Clock,
   Home, Armchair, Tag, Compass, Headphones
 } from 'lucide-react';
@@ -20,14 +21,15 @@ const NAV_ICONS = {
 };
 
 export default function Header() {
-  const { 
-    theme, setTheme, 
-    cartCount, cartTotal, 
-    wishlist, comparator, 
-    searchQuery, setSearchQuery, 
-    searchHistory, recordSearch, 
-    products, setFilters, 
-    setActiveModal, openProductDetail 
+  const navigate = useNavigate();
+  const {
+    theme, setTheme,
+    cartCount, cartTotal,
+    wishlist, comparator,
+    searchQuery, setSearchQuery,
+    searchHistory, recordSearch,
+    products, setFilters,
+    setActiveModal,
   } = useApp();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -202,7 +204,7 @@ export default function Header() {
                         key={p.id} 
                         className="search-product-item"
                         onClick={() => {
-                          openProductDetail(p);
+                          navigate(`/producto/${p.slug}`);
                           setIsSearchOpen(false);
                         }}
                       >

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { CONFIG } from '../../config';
 import { ShoppingBag, X, Trash2, ArrowRight, Truck, Tag, MessageCircle } from 'lucide-react';
 
 export default function CartDrawer() {
-  const { 
-    activeModal, setActiveModal, 
-    cart, removeFromCart, updateCartQuantity, 
-    cartTotal, cartCount, showToast, 
-    setCheckoutStep 
+  const navigate = useNavigate();
+  const {
+    activeModal, setActiveModal,
+    cart, removeFromCart, updateCartQuantity,
+    cartTotal, cartCount, showToast,
+    setCheckoutStep
   } = useApp();
 
   const [couponCode, setCouponCode] = useState('');
@@ -30,8 +32,9 @@ export default function CartDrawer() {
   const finalTotal = cartTotal - discountAmount;
 
   const handleProceedCheckout = () => {
-    setActiveModal('checkout');
     setCheckoutStep(1);
+    setActiveModal(null);
+    navigate('/checkout');
   };
 
   const handleSendCartWhatsApp = () => {

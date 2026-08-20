@@ -1,13 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { CONFIG } from '../../config';
 import { Heart, X, ShoppingBag, Trash2, Share2, MessageCircle, ArrowRight } from 'lucide-react';
 
 export default function WishlistDrawer() {
-  const { 
-    activeModal, setActiveModal, 
-    wishlist, products, toggleWishlist, 
-    addToCart, showToast, openProductDetail 
+  const navigate = useNavigate();
+  const {
+    activeModal, setActiveModal,
+    wishlist, products, toggleWishlist,
+    addToCart, showToast,
   } = useApp();
 
   if (activeModal !== 'wishlist') return null;
@@ -56,8 +58,7 @@ export default function WishlistDrawer() {
                     alt={p.name} 
                     className="cart-item-img"
                     onClick={() => {
-                      openProductDetail(p);
-                      setActiveModal('product-detail');
+                      navigate(`/producto/${p.slug}`);
                     }}
                     style={{ cursor: 'pointer' }}
                   />
@@ -69,8 +70,7 @@ export default function WishlistDrawer() {
                     <h4 
                       style={{ fontSize: '0.92rem', cursor: 'pointer', marginBottom: '0.35rem' }}
                       onClick={() => {
-                        openProductDetail(p);
-                        setActiveModal('product-detail');
+                        navigate(`/producto/${p.slug}`);
                       }}
                     >
                       {p.name}
