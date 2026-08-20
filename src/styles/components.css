@@ -2254,6 +2254,16 @@
 
 .checkout-close-btn {
   flex-shrink: 0;
+  position: relative;
+  z-index: 20;
+  pointer-events: auto;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.checkout-close-btn:hover {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
 }
 
 .checkout-body {

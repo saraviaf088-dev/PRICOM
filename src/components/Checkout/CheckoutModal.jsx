@@ -68,6 +68,11 @@ export default function CheckoutModal() {
     setCheckoutStep(Math.max(1, checkoutStep - 1));
   };
 
+  const handleCloseCheckout = () => {
+    setCheckoutStep(1);
+    setActiveModal(null);
+  };
+
   const handleFinalizeOrder = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -173,7 +178,7 @@ export default function CheckoutModal() {
   };
 
   return (
-    <div className="modal-overlay" onClick={() => setActiveModal(null)} role="dialog" aria-modal="true" aria-label="Proceso de compra">
+    <div className="modal-overlay" onClick={handleCloseCheckout} role="dialog" aria-modal="true" aria-label="Proceso de compra">
       <div className="modal-container checkout-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="drawer-header checkout-header">
@@ -181,7 +186,7 @@ export default function CheckoutModal() {
             <ShieldCheck size={22} color="var(--color-celeste)" />
             <h3 className="checkout-title">Checkout Seguro PRICOM Bolivia</h3>
           </div>
-          <button onClick={() => setActiveModal(null)} className="btn-icon checkout-close-btn">
+          <button onClick={handleCloseCheckout} className="btn-icon checkout-close-btn" type="button">
             <X size={20} />
           </button>
         </div>
@@ -543,7 +548,7 @@ export default function CheckoutModal() {
                   <span>Enviar a WhatsApp</span>
                 </button>
 
-                <button className="btn btn-primary btn-lg" onClick={() => setActiveModal(null)}>
+                <button className="btn btn-primary btn-lg" onClick={handleCloseCheckout}>
                   <span>Volver a la Tienda</span>
                 </button>
               </div>

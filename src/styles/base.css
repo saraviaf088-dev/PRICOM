@@ -203,10 +203,14 @@ ul, ol {
   width: 42px;
   height: 42px;
   padding: 0;
+  border: none;
+  background: transparent;
   border-radius: var(--radius-full);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  color: inherit;
 }
 
 /* Badges & Tags */
