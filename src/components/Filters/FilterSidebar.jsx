@@ -21,12 +21,11 @@ function useDynamicColors(products) {
   return useMemo(() => {
     const colorMap = new Map();
     products.forEach(p => {
-      if (p.colors) {
-        p.colors.forEach(c => {
-          if (c.hex && !colorMap.has(c.hex)) {
-            colorMap.set(c.hex, c.name);
-          }
-        });
+      if (p.colors && p.colors.length > 0) {
+        const mainColor = p.colors[0];
+        if (mainColor.hex && !colorMap.has(mainColor.hex)) {
+          colorMap.set(mainColor.hex, mainColor.name);
+        }
       }
     });
     return Array.from(colorMap.entries()).map(([hex, name]) => ({ name, hex }));
@@ -112,7 +111,7 @@ export default function FilterSidebar({ isMobile = false, onCloseMobile }) {
           />
           <span>Todas las marcas</span>
         </label>
-        {BRANDS.map(brand => (
+        {BRANDS.filter(brand => brand.name === 'Sealy').map(brand => (
           <label key={brand.id} className="filter-checkbox-label">
             <input
               type="radio"
