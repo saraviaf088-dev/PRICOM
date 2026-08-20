@@ -174,73 +174,73 @@ export default function CheckoutModal() {
 
   return (
     <div className="modal-overlay" onClick={() => setActiveModal(null)} role="dialog" aria-modal="true" aria-label="Proceso de compra">
-      <div className="modal-container" style={{ maxWidth: '850px' }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal-container checkout-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="drawer-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div className="drawer-header checkout-header">
+          <div className="checkout-header-left">
             <ShieldCheck size={22} color="var(--color-celeste)" />
-            <h3 style={{ fontSize: '1.25rem' }}>Checkout Seguro PRICOM Bolivia</h3>
+            <h3 className="checkout-title">Checkout Seguro PRICOM Bolivia</h3>
           </div>
-          <button onClick={() => setActiveModal(null)} className="btn-icon">
+          <button onClick={() => setActiveModal(null)} className="btn-icon checkout-close-btn">
             <X size={20} />
           </button>
         </div>
 
-        <div style={{ padding: '2rem' }}>
+        <div className="checkout-body">
           {/* Stepper Progress */}
           <div className="checkout-stepper">
             <div className={`checkout-step-item ${checkoutStep >= 1 ? (checkoutStep > 1 ? 'completed' : 'active') : ''}`}>
               <div className="checkout-step-number">{checkoutStep > 1 ? <Check size={16} /> : 1}</div>
-              <span>1. Carrito</span>
+              <span className="checkout-step-label">1. Carrito</span>
             </div>
             <div className={`checkout-step-item ${checkoutStep >= 2 ? (checkoutStep > 2 ? 'completed' : 'active') : ''}`}>
               <div className="checkout-step-number">{checkoutStep > 2 ? <Check size={16} /> : 2}</div>
-              <span>2. Datos</span>
+              <span className="checkout-step-label">2. Datos</span>
             </div>
             <div className={`checkout-step-item ${checkoutStep >= 3 ? (checkoutStep > 3 ? 'completed' : 'active') : ''}`}>
               <div className="checkout-step-number">{checkoutStep > 3 ? <Check size={16} /> : 3}</div>
-              <span>3. Envío</span>
+              <span className="checkout-step-label">3. Envío</span>
             </div>
             <div className={`checkout-step-item ${checkoutStep >= 4 ? (checkoutStep > 4 ? 'completed' : 'active') : ''}`}>
               <div className="checkout-step-number">{checkoutStep > 4 ? <Check size={16} /> : 4}</div>
-              <span>4. Pago</span>
+              <span className="checkout-step-label">4. Pago</span>
             </div>
             <div className={`checkout-step-item ${checkoutStep >= 5 ? 'active' : ''}`}>
               <div className="checkout-step-number">5</div>
-              <span>5. Confirmación</span>
+              <span className="checkout-step-label">5. Confirmación</span>
             </div>
           </div>
 
           {/* STEP 1: Resumen */}
           {checkoutStep === 1 && (
             <div>
-              <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Resumen de Productos</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+              <h4 className="checkout-section-title">Resumen de Productos</h4>
+              <div className="checkout-cart-list">
                 {cart.map((item, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <img src={item.product.images[0]} alt={item.product.name} style={{ width: 50, height: 50, borderRadius: 'var(--radius-sm)', objectFit: 'cover' }} />
-                      <div>
-                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>{item.product.name}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Color: {item.selectedColor} • Cant: {item.quantity}</div>
+                  <div key={i} className="checkout-cart-item">
+                    <div className="checkout-cart-item-left">
+                      <img src={item.product.images[0]} alt={item.product.name} className="checkout-cart-item-img" />
+                      <div className="checkout-cart-item-info">
+                        <div className="checkout-cart-item-name">{item.product.name}</div>
+                        <div className="checkout-cart-item-meta">Color: {item.selectedColor} • Cant: {item.quantity}</div>
                       </div>
                     </div>
-                    <div style={{ fontWeight: '800', color: 'var(--color-azul-oscuro)' }}>
+                    <div className="checkout-cart-item-price">
                       Bs. {(item.product.price * item.quantity).toLocaleString('es-BO')}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderTop: '2px dashed var(--border-color)', marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: '1.1rem', fontWeight: '700' }}>Subtotal:</span>
-                <span style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--color-azul-oscuro)' }}>
+              <div className="checkout-subtotal">
+                <span className="checkout-subtotal-label">Subtotal:</span>
+                <span className="checkout-subtotal-value">
                   Bs. {cartTotal.toLocaleString('es-BO')}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="btn btn-primary btn-lg" onClick={handleNextStep}>
+              <div className="checkout-actions">
+                <button className="btn btn-primary btn-lg btn-full-mobile" onClick={handleNextStep}>
                   <span>Continuar a Datos del Cliente</span>
                   <ArrowRight size={16} />
                 </button>
@@ -251,8 +251,8 @@ export default function CheckoutModal() {
           {/* STEP 2: Datos del Cliente */}
           {checkoutStep === 2 && (
             <div>
-              <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Datos Personales & Facturación en Bolivia</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <h4 className="checkout-section-title">Datos Personales & Facturación en Bolivia</h4>
+              <div className="checkout-form-grid">
                 <div className="form-group">
                   <label className="form-label">Nombre Completo *</label>
                   <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-input" placeholder="Ej: Fabiola Morales" />
@@ -271,13 +271,13 @@ export default function CheckoutModal() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}>
+              <div className="checkout-actions">
                 <button className="btn btn-outline" onClick={handlePrevStep}>
                   <ArrowLeft size={16} />
                   <span>Volver</span>
                 </button>
-                <button className="btn btn-primary btn-lg" onClick={handleNextStep}>
-                  <span>Continuar a Dirección de Entrega</span>
+                <button className="btn btn-primary btn-lg btn-full-mobile" onClick={handleNextStep}>
+                  <span>Continuar a Dirección</span>
                   <ArrowRight size={16} />
                 </button>
               </div>
@@ -287,46 +287,34 @@ export default function CheckoutModal() {
           {/* STEP 3: Dirección & Envío */}
           {checkoutStep === 3 && (
             <div>
-              <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Método y Dirección de Entrega en Bolivia</h4>
+              <h4 className="checkout-section-title">Método y Dirección de Entrega en Bolivia</h4>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div className="checkout-delivery-options">
                 <div 
-                  style={{
-                    padding: '1rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: `2px solid ${formData.deliveryType === 'home' ? 'var(--color-celeste)' : 'var(--border-color)'}`,
-                    cursor: 'pointer',
-                    backgroundColor: formData.deliveryType === 'home' ? 'var(--color-celeste-light)' : 'var(--bg-surface)'
-                  }}
+                  className={`checkout-delivery-option ${formData.deliveryType === 'home' ? 'selected' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, deliveryType: 'home' }))}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700', marginBottom: '0.35rem' }}>
+                  <div className="checkout-delivery-option-header">
                     <Truck size={18} color="var(--color-celeste)" />
-                    <span>Envío a Domicilio con Armado</span>
+                    <span className="checkout-delivery-option-title">Envío a Domicilio con Armado</span>
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Personal especializado entrega y arma el mueble en tu sala.</p>
+                  <p className="checkout-delivery-option-desc">Personal especializado entrega y arma el mueble en tu sala.</p>
                 </div>
 
                 <div 
-                  style={{
-                    padding: '1rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: `2px solid ${formData.deliveryType === 'showroom' ? 'var(--color-celeste)' : 'var(--border-color)'}`,
-                    cursor: 'pointer',
-                    backgroundColor: formData.deliveryType === 'showroom' ? 'var(--color-celeste-light)' : 'var(--bg-surface)'
-                  }}
+                  className={`checkout-delivery-option ${formData.deliveryType === 'showroom' ? 'selected' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, deliveryType: 'showroom' }))}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700', marginBottom: '0.35rem' }}>
+                  <div className="checkout-delivery-option-header">
                     <Building size={18} color="var(--color-celeste)" />
-                    <span>Retiro en Showroom Oficial</span>
+                    <span className="checkout-delivery-option-title">Retiro en Showroom Oficial</span>
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Retira sin costo en Equipetrol, Calacoto o Cochabamba.</p>
+                  <p className="checkout-delivery-option-desc">Retira sin costo en Equipetrol, Calacoto o Cochabamba.</p>
                 </div>
               </div>
 
               {formData.deliveryType === 'home' ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="checkout-form-grid">
                   <div className="form-group">
                     <label className="form-label">Departamento</label>
                     <select name="department" value={formData.department} onChange={handleInputChange} className="form-select">
@@ -359,13 +347,13 @@ export default function CheckoutModal() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}>
+              <div className="checkout-actions">
                 <button className="btn btn-outline" onClick={handlePrevStep}>
                   <ArrowLeft size={16} />
                   <span>Volver</span>
                 </button>
-                <button className="btn btn-primary btn-lg" onClick={handleNextStep}>
-                  <span>Continuar a Forma de Pago</span>
+                <button className="btn btn-primary btn-lg btn-full-mobile" onClick={handleNextStep}>
+                  <span>Continuar a Pago</span>
                   <ArrowRight size={16} />
                 </button>
               </div>
@@ -375,103 +363,67 @@ export default function CheckoutModal() {
           {/* STEP 4: Métodos de Pago */}
           {checkoutStep === 4 && (
             <div>
-              <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Selecciona tu Método de Pago</h4>
+              <h4 className="checkout-section-title">Selecciona tu Método de Pago</h4>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.5rem' }}>
+              <div className="checkout-payment-list">
                 {/* QR Simple */}
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: `2px solid ${formData.paymentMethod === 'qr' ? 'var(--color-celeste)' : 'var(--border-color)'}`,
-                  backgroundColor: formData.paymentMethod === 'qr' ? 'var(--color-celeste-light)' : 'var(--bg-surface)',
-                  cursor: 'pointer'
-                }}>
+                <label className={`checkout-payment-option ${formData.paymentMethod === 'qr' ? 'selected' : ''}`}>
                   <input type="radio" name="paymentMethod" value="qr" checked={formData.paymentMethod === 'qr'} onChange={handleInputChange} />
-                  <QrCode size={24} color="var(--color-celeste)" />
-                  <div>
-                    <div style={{ fontWeight: '700' }}>QR Simple Interbancario (Recomendado en Bolivia)</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Genera código QR compatible con BCP, BNB, Banco Mercantil, GanaMóvil, Fassil y cualquier app bancaria.</div>
+                  <QrCode size={24} color="var(--color-celeste)" className="checkout-payment-icon" />
+                  <div className="checkout-payment-info">
+                    <div className="checkout-payment-title">QR Simple Interbancario (Recomendado)</div>
+                    <div className="checkout-payment-desc">Compatible con BCP, BNB, Banco Mercantil, GanaMóvil y cualquier app bancaria.</div>
                   </div>
                 </label>
 
                 {/* Tarjeta */}
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: `2px solid ${formData.paymentMethod === 'card' ? 'var(--color-celeste)' : 'var(--border-color)'}`,
-                  backgroundColor: formData.paymentMethod === 'card' ? 'var(--color-celeste-light)' : 'var(--bg-surface)',
-                  cursor: 'pointer'
-                }}>
+                <label className={`checkout-payment-option ${formData.paymentMethod === 'card' ? 'selected' : ''}`}>
                   <input type="radio" name="paymentMethod" value="card" checked={formData.paymentMethod === 'card'} onChange={handleInputChange} />
-                  <CreditCard size={24} color="var(--color-azul-oscuro)" />
-                  <div>
-                    <div style={{ fontWeight: '700' }}>Tarjeta de Débito / Crédito Visa o Mastercard</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Procesamiento seguro encriptado TLS 256 bits sin recargo.</div>
+                  <CreditCard size={24} color="var(--color-azul-oscuro)" className="checkout-payment-icon" />
+                  <div className="checkout-payment-info">
+                    <div className="checkout-payment-title">Tarjeta de Débito / Crédito</div>
+                    <div className="checkout-payment-desc">Visa o Mastercard. Procesamiento seguro encriptado TLS 256 bits.</div>
                   </div>
                 </label>
 
                 {/* Tigo Money */}
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: `2px solid ${formData.paymentMethod === 'tigo' ? 'var(--color-celeste)' : 'var(--border-color)'}`,
-                  backgroundColor: formData.paymentMethod === 'tigo' ? 'var(--color-celeste-light)' : 'var(--bg-surface)',
-                  cursor: 'pointer'
-                }}>
+                <label className={`checkout-payment-option ${formData.paymentMethod === 'tigo' ? 'selected' : ''}`}>
                   <input type="radio" name="paymentMethod" value="tigo" checked={formData.paymentMethod === 'tigo'} onChange={handleInputChange} />
-                  <Smartphone size={24} color="#00377B" />
-                  <div>
-                    <div style={{ fontWeight: '700' }}>Tigo Money</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Paga directo desde tu billetera móvil Tigo Money.</div>
+                  <Smartphone size={24} color="#00377B" className="checkout-payment-icon" />
+                  <div className="checkout-payment-info">
+                    <div className="checkout-payment-title">Tigo Money</div>
+                    <div className="checkout-payment-desc">Paga directo desde tu billetera móvil Tigo Money.</div>
                   </div>
                 </label>
 
                 {/* Transferencia */}
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  padding: '1rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: `2px solid ${formData.paymentMethod === 'transfer' ? 'var(--color-celeste)' : 'var(--border-color)'}`,
-                  backgroundColor: formData.paymentMethod === 'transfer' ? 'var(--color-celeste-light)' : 'var(--bg-surface)',
-                  cursor: 'pointer'
-                }}>
+                <label className={`checkout-payment-option ${formData.paymentMethod === 'transfer' ? 'selected' : ''}`}>
                   <input type="radio" name="paymentMethod" value="transfer" checked={formData.paymentMethod === 'transfer'} onChange={handleInputChange} />
-                  <Building size={24} color="var(--text-secondary)" />
-                  <div>
-                    <div style={{ fontWeight: '700' }}>Transferencia Bancaria Directa</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Te proporcionamos nuestras cuentas corrientes en BCP o BNB.</div>
+                  <Building size={24} color="var(--text-secondary)" className="checkout-payment-icon" />
+                  <div className="checkout-payment-info">
+                    <div className="checkout-payment-title">Transferencia Bancaria Directa</div>
+                    <div className="checkout-payment-desc">Te proporcionamos nuestras cuentas corrientes en BCP o BNB.</div>
                   </div>
                 </label>
               </div>
 
               {/* QR Preview if QR is selected */}
               {formData.paymentMethod === 'qr' && (
-                <div style={{ textAlign: 'center', padding: '1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
-                  <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: 'var(--color-azul-oscuro)' }}>
+                <div className="checkout-qr-box">
+                  <div className="checkout-qr-title">
                     Código QR Simple Oficial PRICOM
                   </div>
-                  <div style={{ display: 'inline-block', padding: '12px', background: '#fff', borderRadius: '10px', boxShadow: 'var(--shadow-sm)' }}>
+                  <div className="checkout-qr-image-container">
                     <img 
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=PRICOM-${formData.department}-${totalAmount}-BS-${Date.now()}`}
                       alt="QR Simple" 
-                      style={{ width: 160, height: 160, display: 'block' }} 
+                      className="checkout-qr-image"
                     />
                   </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
-                    Escanea este código desde la app de tu banco boliviano por <strong>Bs. {totalAmount.toLocaleString('es-BO')}</strong>.
+                  <div className="checkout-qr-amount">
+                    Escanea desde tu banco por <strong>Bs. {totalAmount.toLocaleString('es-BO')}</strong>.
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  <div className="checkout-qr-note">
                     El pago será verificado automáticamente por nuestro sistema.
                   </div>
                 </div>
@@ -479,17 +431,17 @@ export default function CheckoutModal() {
 
               {/* Bank Transfer Info */}
               {formData.paymentMethod === 'transfer' && (
-                <div style={{ padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
-                  <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: 'var(--color-azul-oscuro)' }}>
+                <div className="checkout-info-box">
+                  <div className="checkout-info-title" style={{ color: 'var(--color-azul-oscuro)' }}>
                     Datos para Transferencia Bancaria
                   </div>
-                  <div style={{ fontSize: '0.88rem', lineHeight: '1.6' }}>
+                  <div className="checkout-info-content">
                     <div><strong>Banco BCP:</strong> Cuenta Corriente N° 123456789</div>
                     <div><strong>CCI:</strong> 005123456789012345</div>
                     <div><strong>Titular:</strong> PRICOM Bolivia S.R.L.</div>
                     <div><strong>NIT:</strong> 123456789</div>
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                  <div className="checkout-info-note">
                     Envía el comprobante de pago a WhatsApp para confirmar tu pedido.
                   </div>
                 </div>
@@ -497,42 +449,42 @@ export default function CheckoutModal() {
 
               {/* Tigo Money Info */}
               {formData.paymentMethod === 'tigo' && (
-                <div style={{ padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
-                  <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: '#00377B' }}>
+                <div className="checkout-info-box">
+                  <div className="checkout-info-title" style={{ color: '#00377B' }}>
                     Pago con Tigo Money
                   </div>
-                  <div style={{ fontSize: '0.88rem', lineHeight: '1.6' }}>
+                  <div className="checkout-info-content">
                     <div><strong>Número de cuenta:</strong> 76740940</div>
                     <div><strong>Nombre:</strong> PRICOM Bolivia</div>
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                  <div className="checkout-info-note">
                     Realiza la transferencia desde tu app Tigo Money y envía el comprobante.
                   </div>
                 </div>
               )}
 
               {/* Final Totals Summary */}
-              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.35rem' }}>
+              <div className="checkout-totals-box">
+                <div className="checkout-totals-row">
                   <span>Subtotal:</span>
                   <span>Bs. {cartTotal.toLocaleString('es-BO')}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                <div className="checkout-totals-row">
                   <span>Envío y Armado:</span>
                   <span>{shippingCost === 0 ? '¡Gratis!' : `Bs. ${shippingCost.toLocaleString('es-BO')}`}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.3rem', fontWeight: '800', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem' }}>
+                <div className="checkout-totals-row checkout-totals-total">
                   <span>Total Final:</span>
-                  <span style={{ color: 'var(--color-azul-oscuro)' }}>Bs. {totalAmount.toLocaleString('es-BO')}</span>
+                  <span className="checkout-totals-total-value">Bs. {totalAmount.toLocaleString('es-BO')}</span>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div className="checkout-actions">
                 <button className="btn btn-outline" onClick={handlePrevStep} disabled={isProcessing}>
                   <ArrowLeft size={16} />
                   <span>Volver</span>
                 </button>
-                <button className="btn btn-primary btn-lg" onClick={handleFinalizeOrder} disabled={isProcessing}>
+                <button className="btn btn-primary btn-lg btn-full-mobile" onClick={handleFinalizeOrder} disabled={isProcessing}>
                   {isProcessing ? (
                     <>
                       <div className="skeleton" style={{ width: 16, height: 16, borderRadius: '50%' }} />
@@ -540,7 +492,7 @@ export default function CheckoutModal() {
                     </>
                   ) : (
                     <>
-                      <span>Confirmar y Finalizar Pedido</span>
+                      <span>Confirmar Pedido</span>
                       <Check size={18} />
                     </>
                   )}
@@ -551,33 +503,33 @@ export default function CheckoutModal() {
 
           {/* STEP 5: Confirmación de Pedido */}
           {checkoutStep === 5 && orderConfirmed && (
-            <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-              <CheckCircle2 size={64} color="var(--color-success)" style={{ margin: '0 auto 1rem' }} />
-              <h3 style={{ fontSize: '1.8rem', color: 'var(--color-azul-oscuro)', marginBottom: '0.5rem' }}>
+            <div className="checkout-confirmation">
+              <CheckCircle2 size={64} color="var(--color-success)" className="checkout-confirmation-icon" />
+              <h3 className="checkout-confirmation-title">
                 ¡Gracias por tu compra, {orderConfirmed.customer.name}!
               </h3>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '1rem' }}>
-                Tu pedido <strong>{orderConfirmed.id}</strong> ha sido registrado. Te hemos enviado un correo a <strong>{orderConfirmed.customer.email}</strong> y nuestro equipo de logística coordinará contigo la entrega.
+              <p className="checkout-confirmation-text">
+                Tu pedido <strong>{orderConfirmed.id}</strong> ha sido registrado. Te hemos enviado un correo a <strong>{orderConfirmed.customer.email}</strong> y nuestro equipo coordinará contigo la entrega.
               </p>
 
               {/* Order Receipt Box */}
-              <div style={{ textAlign: 'left', backgroundColor: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: 'var(--radius-lg)', marginBottom: '2rem', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1rem' }}>
-                  <div>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>CÓDIGO DE PEDIDO:</span>
-                    <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>{orderConfirmed.id}</div>
+              <div className="checkout-receipt">
+                <div className="checkout-receipt-header">
+                  <div className="checkout-receipt-col">
+                    <span className="checkout-receipt-label">CÓDIGO DE PEDIDO:</span>
+                    <div className="checkout-receipt-value">{orderConfirmed.id}</div>
                   </div>
-                  <div>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>FECHA:</span>
-                    <div style={{ fontWeight: '700' }}>{orderConfirmed.date}</div>
+                  <div className="checkout-receipt-col">
+                    <span className="checkout-receipt-label">FECHA:</span>
+                    <div className="checkout-receipt-value">{orderConfirmed.date}</div>
                   </div>
-                  <div>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>TOTAL:</span>
-                    <div style={{ fontWeight: '800', color: 'var(--color-azul-oscuro)' }}>Bs. {orderConfirmed.total.toLocaleString('es-BO')}</div>
+                  <div className="checkout-receipt-col">
+                    <span className="checkout-receipt-label">TOTAL:</span>
+                    <div className="checkout-receipt-value checkout-receipt-total">Bs. {orderConfirmed.total.toLocaleString('es-BO')}</div>
                   </div>
                 </div>
 
-                <div style={{ fontSize: '0.88rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div className="checkout-receipt-details">
                   <div><strong>Destino:</strong> {orderConfirmed.customer.address}, {orderConfirmed.customer.zone}, {orderConfirmed.customer.city} ({orderConfirmed.customer.department})</div>
                   <div><strong>Factura a nombre de:</strong> {orderConfirmed.customer.name} (NIT/CI: {orderConfirmed.customer.nit})</div>
                   <div><strong>Método de Pago:</strong> {orderConfirmed.customer.paymentMethod.toUpperCase()}</div>
@@ -585,10 +537,10 @@ export default function CheckoutModal() {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <div className="checkout-actions checkout-actions-center">
                 <button className="btn btn-whatsapp btn-lg" onClick={handleSendOrderToWhatsApp}>
                   <MessageCircle size={18} />
-                  <span>Enviar Confirmación a WhatsApp</span>
+                  <span>Enviar a WhatsApp</span>
                 </button>
 
                 <button className="btn btn-primary btn-lg" onClick={() => setActiveModal(null)}>
