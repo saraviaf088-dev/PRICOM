@@ -68,10 +68,10 @@ export default function CheckoutModal() {
     setCheckoutStep(Math.max(1, checkoutStep - 1));
   };
 
-  const handleCloseCheckout = () => {
+  const handleCloseCheckout = React.useCallback(() => {
     setCheckoutStep(1);
     setActiveModal(null);
-  };
+  }, [setCheckoutStep, setActiveModal]);
 
   const handleFinalizeOrder = async () => {
     if (isProcessing) return;
@@ -186,7 +186,7 @@ export default function CheckoutModal() {
             <ShieldCheck size={22} color="var(--color-celeste)" />
             <h3 className="checkout-title">Checkout Seguro PRICOM Bolivia</h3>
           </div>
-          <button onClick={handleCloseCheckout} className="btn-icon checkout-close-btn" type="button">
+          <button onClick={(e) => { e.stopPropagation(); handleCloseCheckout(); }} className="btn-icon checkout-close-btn" type="button">
             <X size={20} />
           </button>
         </div>

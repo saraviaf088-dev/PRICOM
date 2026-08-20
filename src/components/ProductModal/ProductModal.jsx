@@ -94,7 +94,7 @@ export default function ProductModal() {
     <div className="modal-overlay" onClick={closeModal} role="dialog" aria-modal="true" aria-label={`Detalles de ${selectedProduct.name}`}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         {/* Close button */}
-        <button className="modal-close-btn" onClick={closeModal} title="Cerrar">
+        <button className="modal-close-btn" type="button" onClick={(e) => { e.stopPropagation(); closeModal(); }} title="Cerrar">
           <X size={20} />
         </button>
 

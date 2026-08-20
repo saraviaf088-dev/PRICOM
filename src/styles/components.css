@@ -1041,7 +1041,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20;
+  z-index: 100;
+  cursor: pointer;
+  border: none;
+  pointer-events: auto;
 }
 
 .modal-close-btn:hover {
@@ -2040,6 +2043,15 @@
   .modal-container {
     max-height: 95vh;
     border-radius: var(--radius-lg);
+  }
+
+  .modal-close-btn {
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 44px;
+    height: 44px;
+    z-index: 9999;
   }
 
   .modal-overlay {
