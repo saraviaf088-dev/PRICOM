@@ -41,7 +41,7 @@ function initDatabase() {
   }
 
   // Initialize empty collections if they don't exist
-  ['products', 'orders', 'payments'].forEach(name => {
+  ['products', 'orders', 'payments', 'users'].forEach(name => {
     const data = readCollection(name);
     if (data.length === 0) {
       writeCollection(name, []);

@@ -3,7 +3,7 @@ import { PRODUCTS as initialProducts } from '../data/products';
 import { ARTICLES } from '../data/articles';
 import { CONFIG } from '../config';
 import { storage } from '../storage';
-import { authAPI, ordersAPI, productsAPI, paymentsAPI, statsAPI } from '../api';
+import { authAPI, ordersAPI, productsAPI, paymentsAPI, statsAPI, usersAPI } from '../api';
 import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
@@ -69,24 +69,38 @@ export function AppProvider({ children }) {
   // ── User Profile Store ──
   const [user, setUser] = useState(() =>
     storage.get(CONFIG.STORAGE_KEYS.USER, {
-      isLoggedIn: false,
-      name: 'Fabiola Morales',
-      email: 'fabiola.morales@ejemplo.bo',
-      phone: '+591 77312345',
-      nit: '4589210014',
-      city: 'Santa Cruz de la Sierra',
-      address: 'Calle Los Cusis #240, Barrio Sirari',
-      orders: [
-        {
-          id: 'PR-89214',
-          date: '12/08/2026',
-          total: 9500,
-          status: 'Entregado',
-          items: [{ name: 'Sealy Santa Cruz Seafoam', quantity: 1, price: 9500 }],
-        },
-      ],
+      name: '',
+      email: '',
+      phone: '',
+      nit: '',
+      city: '',
+      address: '',
+      orders: [],
     })
   );
+
+  // ── Load user profile on mount if token exists ──
+  useEffect(() => {
+    const token = localStorage.getItem('pricom_user_token');
+    if (token) {
+      usersAPI.getProfile()
+        .then(profile => {
+          setUser({
+            name: profile.name || '',
+            email: profile.email || '',
+            phone: profile.phone || '',
+            nit: profile.nit || '',
+            city: '',
+            address: '',
+            orders: [],
+          });
+        })
+        .catch(() => {
+          // Token invalid or expired, clear it
+          localStorage.removeItem('pricom_user_token');
+        });
+    }
+  }, []);
 
   // ── Toast Notifications ──
   const [toasts, setToasts] = useState([]);

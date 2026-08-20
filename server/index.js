@@ -3,11 +3,120 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const path = require('path');
 const { initDatabase, readCollection, writeCollection } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'pricom-secret-key-2026';
+
+// Email transporter configuration
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: process.env.SMTP_PORT || 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || ''
+  }
+});
+
+// Generate verification token
+function generateVerificationToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Send verification email
+async function sendVerificationEmail(email, token, userName) {
+  const verificationUrl = `http://localhost:5173/verificar-email?token=${token}`;
+  
+  const mailOptions = {
+    from: '"PRICOM Bolivia" <noreply@pricom.bo>',
+    to: email,
+    subject: 'Verifica tu correo electrónico - PRICOM',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f7fa; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: 30px 40px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">PRICOM BOLIVIA</h1>
+                    <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Distribuidor Oficial Sealy</p>
+                  </td>
+                </tr>
+                
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 40px;">
+                    <h2 style="color: #1a1c20; margin: 0 0 20px 0; font-size: 22px;">¡Bienvenido, ${userName}!</h2>
+                    <p style="color: #4a5568; line-height: 1.6; margin: 0 0 20px 0;">
+                      Gracias por crear tu cuenta en PRICOM. Para completar tu registro y activar tu cuenta, necesitamos verificar tu dirección de correo electrónico.
+                    </p>
+                    
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                      <tr>
+                        <td align="center">
+                          <a href="${verificationUrl}" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 16px; display: inline-block;">
+                            Verificar Mi Correo Electrónico
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <p style="color: #718096; font-size: 14px; line-height: 1.6; margin: 0 0 10px 0;">
+                      Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:
+                    </p>
+                    <p style="color: #0d6efd; font-size: 13px; word-break: break-all; margin: 0 0 20px 0;">
+                      ${verificationUrl}
+                    </p>
+                    
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+                    
+                    <p style="color: #a0aec0; font-size: 12px; margin: 0;">
+                      Este enlace expirará en 24 horas. Si no solicitaste esta verificación, puedes ignorar este mensaje.
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #f8fafc; padding: 20px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+                    <p style="color: #a0aec0; font-size: 12px; margin: 0;">
+                      © 2026 PRICOM Bolivia S.R.L. Todos los derechos reservados.
+                    </p>
+                    <p style="color: #a0aec0; font-size: 12px; margin: 5px 0 0 0;">
+                      Distribuidor Oficial Autorizado Sealy
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `
+  };
+  
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return false;
+  }
+}
 
 // Initialize database
 initDatabase();
@@ -44,6 +153,355 @@ app.post('/api/auth/login', (req, res) => {
   
   const token = jwt.sign({ id: admin.id, username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '24h' });
   res.json({ token, admin: { id: admin.id, username: admin.username, role: admin.role } });
+});
+
+// ==================== USER ROUTES ====================
+
+// User Registration
+app.post('/api/users/register', async (req, res) => {
+  const { name, email, password, phone, nit } = req.body;
+  
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Nombre, correo y contraseña son requeridos' });
+  }
+  
+  const users = readCollection('users');
+  
+  // Check if email already exists
+  const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (existingUser) {
+    return res.status(400).json({ error: 'Este correo ya está registrado' });
+  }
+  
+  // Generate verification token
+  const verificationToken = generateVerificationToken();
+  const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  
+  // Hash password
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  
+  const newUser = {
+    id: uuidv4(),
+    name,
+    email: email.toLowerCase(),
+    password: hashedPassword,
+    phone: phone || '',
+    nit: nit || '',
+    emailVerified: false,
+    verificationToken,
+    verificationExpires: verificationExpires.toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  users.push(newUser);
+  writeCollection('users', users);
+  
+  // Send verification email
+  const emailSent = await sendVerificationEmail(email, verificationToken, name);
+  
+  if (emailSent) {
+    res.status(201).json({ 
+      message: 'Cuenta creada. Se ha enviado un correo de verificación a tu dirección de email.',
+      userId: newUser.id
+    });
+  } else {
+    // Even if email fails, user is created but can't verify
+    res.status(201).json({ 
+      message: 'Cuenta creada pero no se pudo enviar el correo de verificación. Contacta a soporte.',
+      userId: newUser.id,
+      warning: 'Email not sent'
+    });
+  }
+});
+
+// Verify Email
+app.get('/api/users/verify-email', (req, res) => {
+  const { token } = req.query;
+  
+  if (!token) {
+    return res.status(400).json({ error: 'Token de verificación requerido' });
+  }
+  
+  const users = readCollection('users');
+  const user = users.find(u => u.verificationToken === token);
+  
+  if (!user) {
+    return res.status(400).json({ error: 'Token de verificación inválido' });
+  }
+  
+  // Check if token expired
+  if (new Date(user.verificationExpires) < new Date()) {
+    return res.status(400).json({ error: 'El token de verificación ha expirado. Solicita uno nuevo.' });
+  }
+  
+  // Verify email
+  const userIndex = users.findIndex(u => u.id === user.id);
+  users[userIndex].emailVerified = true;
+  users[userIndex].verificationToken = null;
+  users[userIndex].verificationExpires = null;
+  users[userIndex].updatedAt = new Date().toISOString();
+  
+  writeCollection('users', users);
+  
+  res.json({ message: 'Correo verificado exitosamente. Ya puedes iniciar sesión.' });
+});
+
+// Resend Verification Email
+app.post('/api/users/resend-verification', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Correo electrónico requerido' });
+  }
+  
+  const users = readCollection('users');
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  
+  if (!user) {
+    return res.status(404).json({ error: 'Usuario no encontrado' });
+  }
+  
+  if (user.emailVerified) {
+    return res.status(400).json({ error: 'Este correo ya está verificado' });
+  }
+  
+  // Generate new verification token
+  const verificationToken = generateVerificationToken();
+  const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  
+  const userIndex = users.findIndex(u => u.id === user.id);
+  users[userIndex].verificationToken = verificationToken;
+  users[userIndex].verificationExpires = verificationExpires.toISOString();
+  
+  writeCollection('users', users);
+  
+  const emailSent = await sendVerificationEmail(email, verificationToken, user.name);
+  
+  if (emailSent) {
+    res.json({ message: 'Correo de verificación reenviado' });
+  } else {
+    res.status(500).json({ error: 'No se pudo enviar el correo. Intenta más tarde.' });
+  }
+});
+
+// User Login
+app.post('/api/users/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
+  }
+  
+  const users = readCollection('users');
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  
+  if (!user) {
+    return res.status(401).json({ error: 'Credenciales incorrectas' });
+  }
+  
+  const validPassword = bcrypt.compareSync(password, user.password);
+  if (!validPassword) {
+    return res.status(401).json({ error: 'Credenciales incorrectas' });
+  }
+  
+  if (!user.emailVerified) {
+    return res.status(403).json({ error: 'Correo no verificado. Revisa tu bandeja de entrada.', needsVerification: true });
+  }
+  
+  const token = jwt.sign({ 
+    id: user.id, 
+    email: user.email, 
+    name: user.name,
+    role: 'user' 
+  }, JWT_SECRET, { expiresIn: '7d' });
+  
+  res.json({ 
+    token, 
+    user: { 
+      id: user.id, 
+      name: user.name, 
+      email: user.email, 
+      phone: user.phone,
+      nit: user.nit
+    } 
+  });
+});
+
+// Get User Profile (protected)
+app.get('/api/users/profile', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Token requerido' });
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const users = readCollection('users');
+    const user = users.find(u => u.id === decoded.id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    
+    res.json({ 
+      id: user.id, 
+      name: user.name, 
+      email: user.email, 
+      phone: user.phone,
+      nit: user.nit,
+      emailVerified: user.emailVerified
+    });
+  } catch (err) {
+    res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
+// Update User Profile (protected)
+app.put('/api/users/profile', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Token requerido' });
+  
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const users = readCollection('users');
+    const userIndex = users.findIndex(u => u.id === decoded.id);
+    
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    
+    const { name, phone, nit } = req.body;
+    if (name) users[userIndex].name = name;
+    if (phone !== undefined) users[userIndex].phone = phone;
+    if (nit !== undefined) users[userIndex].nit = nit;
+    users[userIndex].updatedAt = new Date().toISOString();
+    
+    writeCollection('users', users);
+    
+    res.json({ 
+      message: 'Perfil actualizado',
+      user: { 
+        id: users[userIndex].id, 
+        name: users[userIndex].name, 
+        email: users[userIndex].email, 
+        phone: users[userIndex].phone,
+        nit: users[userIndex].nit
+      } 
+    });
+  } catch (err) {
+    res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
+// Send Password Reset Email
+app.post('/api/users/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Correo electrónico requerido' });
+  }
+  
+  const users = readCollection('users');
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  
+  if (!user) {
+    // Don't reveal if user exists or not
+    return res.json({ message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
+  }
+  
+  // Generate reset token
+  const resetToken = generateVerificationToken();
+  const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  
+  const userIndex = users.findIndex(u => u.id === user.id);
+  users[userIndex].resetPasswordToken = resetToken;
+  users[userIndex].resetPasswordExpires = resetExpires.toISOString();
+  
+  writeCollection('users', users);
+  
+  // Send reset email
+  const resetUrl = `http://localhost:5173/restablecer-password?token=${resetToken}`;
+  
+  const mailOptions = {
+    from: '"PRICOM Bolivia" <noreply@pricom.bo>',
+    to: email,
+    subject: 'Restablecer tu contraseña - PRICOM',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="UTF-8"></head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: #f4f7fa;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f7fa; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                <tr>
+                  <td style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: 30px 40px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px;">PRICOM BOLIVIA</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px;">
+                    <h2 style="color: #1a1c20; margin: 0 0 20px 0;">Restablecer Contraseña</h2>
+                    <p style="color: #4a5568; line-height: 1.6;">Hola ${user.name},</p>
+                    <p style="color: #4a5568; line-height: 1.6;">Recibimos una solicitud para restablecer tu contraseña. Haz clic en el botón de abajo:</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                      <tr>
+                        <td align="center">
+                          <a href="${resetUrl}" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 700; font-size: 16px; display: inline-block;">
+                            Restablecer Contraseña
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="color: #a0aec0; font-size: 12px;">Este enlace expirará en 1 hora. Si no solicitaste esto, ignora este mensaje.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `
+  };
+  
+  try {
+    await transporter.sendMail(mailOptions);
+    res.json({ message: 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.' });
+  } catch (error) {
+    console.error('Error sending reset email:', error);
+    res.status(500).json({ error: 'Error al enviar el correo' });
+  }
+});
+
+// Reset Password
+app.post('/api/users/reset-password', (req, res) => {
+  const { token, newPassword } = req.body;
+  
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Token y nueva contraseña son requeridos' });
+  }
+  
+  const users = readCollection('users');
+  const user = users.find(u => u.resetPasswordToken === token);
+  
+  if (!user) {
+    return res.status(400).json({ error: 'Token inválido' });
+  }
+  
+  if (new Date(user.resetPasswordExpires) < new Date()) {
+    return res.status(400).json({ error: 'El token ha expirado' });
+  }
+  
+  const userIndex = users.findIndex(u => u.id === user.id);
+  users[userIndex].password = bcrypt.hashSync(newPassword, 10);
+  users[userIndex].resetPasswordToken = null;
+  users[userIndex].resetPasswordExpires = null;
+  users[userIndex].updatedAt = new Date().toISOString();
+  
+  writeCollection('users', users);
+  
+  res.json({ message: 'Contraseña actualizada exitosamente' });
 });
 
 // ==================== PRODUCT ROUTES ====================

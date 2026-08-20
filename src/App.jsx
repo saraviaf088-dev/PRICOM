@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import ProductPage from './pages/ProductPage';
 import CheckoutPage from './pages/CheckoutPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 // ── Lazy loaded (only when needed) ──
 const CartDrawer = lazy(() => import('./components/CartDrawer/CartDrawer'));
@@ -83,6 +84,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/producto/:slug" element={<ProductPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/verificar-email" element={<VerifyEmailPage />} />
           </Routes>
           <AppShell />
         </BrowserRouter>
