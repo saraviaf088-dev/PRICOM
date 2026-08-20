@@ -8,7 +8,27 @@ import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
 
+// App version - increment to force cache clear
+const APP_VERSION = '1.0.1';
+
 export function AppProvider({ children }) {
+  // Clear stale cache on version change
+  useEffect(() => {
+    const storedVersion = localStorage.getItem('pricom_app_version');
+    if (storedVersion !== APP_VERSION) {
+      // Clear all PRICOM localStorage entries except cart and wishlist
+      const keysToPreserve = ['pricom_cart', 'pricom_wishlist'];
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('pricom_') && !keysToPreserve.includes(key)) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      localStorage.setItem('pricom_app_version', APP_VERSION);
+    }
+  }, []);
   // ── Products Store (editable by Admin) ──
   const [products, setProducts] = useState(() =>
     storage.get(CONFIG.STORAGE_KEYS.PRODUCTS, initialProducts)
