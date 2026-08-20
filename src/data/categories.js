@@ -21,15 +21,6 @@ export const CATEGORIES = [
     image: "/images/SEALY-GAMEDAY-RA A17-114/1.jpg",
     subcategories: ["Reclinables Manuales", "Reclinables Motorizados", "Sillones Cine en Casa", "Reclinables con Masaje"]
   },
-  {
-    id: "sillas",
-    name: "Sillas",
-    slug: "sillas",
-    tagline: "Sillas de comedor y banquetas modernas",
-    count: 5,
-    image: "https://images.unsplash.com/photo-1580481077195-c99276d337d1?auto=format&fit=crop&w=800&q=80",
-    subcategories: ["Sillas de Comedor", "Sillas Tapizadas", "Banquetas de Bar", "Sillas de Escritorio"]
-  }
 ];
 
 export const BRANDS = [
@@ -44,7 +35,6 @@ export const NAVIGATION_LINKS = [
   { label: "Inicio", path: "#inicio" },
   { label: "Sofás Cama", path: "#catalogo", filter: { category: "Sofás Cama" } },
   { label: "Recliners", path: "#catalogo", filter: { category: "Reclinables" } },
-  { label: "Sillas", path: "#catalogo", filter: { category: "Sillas" } },
   { label: "Ofertas", path: "#ofertas", isHighlight: true },
   { label: "Inspírate", path: "#inspirate" },
   { label: "Trabaja con Nosotros", path: "#promotores" },

@@ -13,7 +13,6 @@ const NAV_ICONS = {
   'Inicio': Home,
   'Sofás Cama': Armchair,
   'Recliners': Armchair,
-  'Sillas': Armchair,
   'Ofertas': Tag,
   'Inspírate': Compass,
   'Trabaja con Nosotros': Headphones,

@@ -810,51 +810,7 @@ export const PRODUCTS = [
     stockCount: 4,
     locations: ["Santa Cruz", "La Paz"]
   },
-  {
-    id: "silla-comedor-nordica-oslo",
-    slug: "set-sillas-comedor-nordicas-oslo",
-    name: "Set x2 Sillas Nórdicas Oslo",
-    brand: "Nordic Studio",
-    category: "Sillas",
-    subCategory: "Sillas de Comedor",
-    price: 2400,
-    originalPrice: 3600,
-    discount: 33,
-    isOffer: true,
-    isNew: false,
-    isFeatured: false,
-    rating: 4.9,
-    reviewCount: 31,
-    images: [
-      "https://images.unsplash.com/photo-1580481077195-c99276d337d1?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1200&q=80"
-    ],
-    colors: [
-      { name: "Gris Lino", hex: "#a8a69f", active: true }
-    ],
-    material: "Madera de Fresno Natural y Tapiz Lino Acolchado",
-    style: "Escandinavo",
-    dimensions: {
-      width: "52 cm",
-      depth: "54 cm",
-      height: "82 cm"
-    },
-    shortDescription: "Par de sillas de comedor con curvatura ergonómica en madera maciza de fresno y asiento tapizado en lino natural.",
-    fullDescription: "Inspiradas en el diseño danés de mediados de siglo, las sillas Oslo ofrecen un equilibrio perfecto entre ligereza visual y solidez constructiva.",
-    features: [
-      "Madera curvada a vapor con veta natural a la vista.",
-      "Asiento con espuma de alta densidad para cenas prolongadas.",
-      "Deslizadores de fieltro para cuidar el porcelanato o parquet."
-    ],
-    specs: [
-      { label: "Pack", value: "2 Sillas armadas" },
-      { label: "Madera", value: "Fresno macizo certificado FSC" }
-    ],
-    warranty: "2 Años de Garantía",
-    availability: "En Stock",
-    stockCount: 12,
-    locations: ["Santa Cruz", "La Paz", "Cochabamba"]
-  },
+
   {
     id: "lampara-pie-arco-lumina",
     slug: "lampara-pie-arco-lumina-laton",

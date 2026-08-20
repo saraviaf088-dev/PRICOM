@@ -454,7 +454,7 @@ export default function AdminModal() {
                     <select className="form-select" value={newProd.category} onChange={(e) => setNewProd({ ...newProd, category: e.target.value })}>
                       <option value="Sofás Cama">Sofás Cama</option>
                       <option value="Reclinables">Recliners</option>
-                      <option value="Sillas">Sillas</option>
+
                     </select>
                   </div>
                   <div className="form-group">

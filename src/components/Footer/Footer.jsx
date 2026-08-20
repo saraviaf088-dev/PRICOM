@@ -75,7 +75,7 @@ export default function Footer() {
             <ul className="footer-links">
               <li><a href="#catalogo" onClick={() => handleCategoryClick('Sofás Cama')} className="footer-link">Sofás Cama Sealy</a></li>
               <li><a href="#catalogo" onClick={() => handleCategoryClick('Reclinables')} className="footer-link">Recliners Zero-Gravity</a></li>
-              <li><a href="#catalogo" onClick={() => handleCategoryClick('Sillas')} className="footer-link">Sillas de Comedor</a></li>
+
             </ul>
           </div>
 
