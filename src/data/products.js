@@ -318,7 +318,7 @@ export const PRODUCTS = [
   {
     id: "sealy-gameday-rg",
     slug: "sillon-reclinable-sealy-gameday-rg",
-    name: "Sealy Gameday RG Grey",
+    name: "Sealy Gameday Gris",
     brand: "Sealy",
     category: "Reclinables",
     subCategory: "Sillones Reclinables de Lujo",
@@ -338,7 +338,7 @@ export const PRODUCTS = [
       "/images/SEALY-GAMEDAY-RG A4-175/5.jpg"
     ],
     colors: [
-      { name: "Grey", hex: "#7a8288", active: true }
+      { name: "Gris", hex: "#7a8288", active: true }
     ],
     material: "Tapiz Gris Plomo Textil Microfibra con acolchado multicapa Sealy",
     style: "Moderno",
