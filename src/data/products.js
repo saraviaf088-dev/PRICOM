@@ -415,7 +415,7 @@ export const PRODUCTS = [
   {
     id: "sealy-kennedy-chive",
     slug: "sofa-cama-sealy-kennedy-chive",
-    name: "Sealy Kennedy Beach",
+    name: "Sealy Kennedy Chive",
     brand: "Sealy",
     category: "Sofás Cama",
     subCategory: "Sofás Cama Seccionales",
@@ -467,7 +467,7 @@ export const PRODUCTS = [
   {
     id: "sealy-kennedy-beach",
     slug: "sofa-cama-sealy-kennedy-beach",
-    name: "Sealy Kennedy Chive",
+    name: "Sealy Kennedy Beach",
     brand: "Sealy",
     category: "Sofás Cama",
     subCategory: "Sofás Cama Seccionales",
