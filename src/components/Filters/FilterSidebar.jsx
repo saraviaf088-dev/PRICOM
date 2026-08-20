@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { CATEGORIES, BRANDS } from '../../data/categories';
 import { Filter, RotateCcw, Check, Sparkles } from 'lucide-react';
@@ -8,29 +8,21 @@ export const COLOR_OPTIONS = [
   { name: 'Seafoam', hex: '#7ba79d' },
   { name: 'Slate', hex: '#4f555c' },
   { name: 'Piper Blue', hex: '#2a5482' },
-  { name: 'Chive Oliva', hex: '#5d6b4f' },
   { name: 'Mocha', hex: '#6f5440' },
-  { name: 'Chocolate', hex: '#4a3224' },
-  { name: 'Beach Arena', hex: '#c9beaa' },
-  { name: 'Turquesa', hex: '#1f8d9b' },
+  { name: 'Camel', hex: '#b49b7e' },
+  { name: 'Grey', hex: '#7a8288' },
+  { name: 'Noir', hex: '#1a1c20' },
+  { name: 'Verde Oliva', hex: '#5d6b4f' },
+  { name: 'Beige', hex: '#c9beaa' },
   { name: 'Gris Perla', hex: '#a4a8ad' },
-  { name: 'Noir / Negro', hex: '#1a1c20' }
+  { name: 'Turquesa', hex: '#1f8d9b' },
+  { name: 'Chocolate', hex: '#4a3224' },
+  { name: 'Blanco', hex: '#f5f5f5' },
+  { name: 'Gris Lino', hex: '#a8a69f' },
+  { name: 'Dorado', hex: '#d4af37' },
+  { name: 'Marfil', hex: '#ece7dd' },
+  { name: 'Terracota', hex: '#e5ded4' }
 ];
-
-function useDynamicColors(products) {
-  return useMemo(() => {
-    const colorMap = new Map();
-    products.forEach(p => {
-      if (p.colors && p.colors.length > 0) {
-        const mainColor = p.colors[0];
-        if (mainColor.hex && !colorMap.has(mainColor.hex)) {
-          colorMap.set(mainColor.hex, mainColor.name);
-        }
-      }
-    });
-    return Array.from(colorMap.entries()).map(([hex, name]) => ({ name, hex }));
-  }, [products]);
-}
 
 export const MATERIAL_OPTIONS = [
   'Lino Premium',
@@ -50,8 +42,7 @@ export const STYLE_OPTIONS = [
 ];
 
 export default function FilterSidebar({ isMobile = false, onCloseMobile }) {
-  const { filters, setFilters, resetFilters, products } = useApp();
-  const dynamicColors = useDynamicColors(products);
+  const { filters, setFilters, resetFilters } = useApp();
 
   const handlePriceChange = (e, type) => {
     const val = Number(e.target.value);
@@ -162,10 +153,10 @@ export default function FilterSidebar({ isMobile = false, onCloseMobile }) {
           <button
             className={`color-swatch-btn ${filters.color === 'all' ? 'active' : ''}`}
             onClick={() => setFilters(prev => ({ ...prev, color: 'all' }))}
-            style={{ background: 'linear-gradient(45deg, #ccc, #fff)' }}
+            style={{ background: '#ccc' }}
             title="Todos los colores"
           />
-          {dynamicColors.map((c, i) => (
+          {COLOR_OPTIONS.map((c, i) => (
             <button
               key={i}
               className={`color-swatch-btn ${filters.color.toLowerCase() === c.name.toLowerCase() ? 'active' : ''}`}

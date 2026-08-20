@@ -28,8 +28,7 @@ export const PRODUCTS = [
       "/images/SEALY-SANTACRUZ-SEAFOAM/6.jpg"
     ],
     colors: [
-      { name: "Seafoam", hex: "#7ba79d", active: true },
-      { name: "Slate", hex: "#5a626a", active: false }
+      { name: "Seafoam", hex: "#7ba79d", active: true }
     ],
     material: "Tapizado Lino Premium Anti-desgaste con Espuma Sealy Posturepedic®",
     style: "Contemporáneo",
@@ -84,8 +83,7 @@ export const PRODUCTS = [
       "/images/SEALY-SANTACRUZ-SLATE/5.jpg"
     ],
     colors: [
-      { name: "Slate", hex: "#4f555c", active: true },
-      { name: "Seafoam", hex: "#7ba79d", active: false }
+      { name: "Slate", hex: "#4f555c", active: true }
     ],
     material: "Textil Slate Gris Carbón de alta resistencia con soporte ortopédico",
     style: "Minimalista",
@@ -137,9 +135,7 @@ export const PRODUCTS = [
       "/images/SEALY-MONTEREY-PIPER BLUE/5.jpg"
     ],
     colors: [
-      { name: "Piper Blue", hex: "#2a5482", active: true },
-      { name: "Mocha", hex: "#6f5440", active: false },
-      { name: "Slate", hex: "#4b535d", active: false }
+      { name: "Piper Blue", hex: "#2a5482", active: true }
     ],
     material: "Sistema Click-Clack de Acero y Colchón Ortopédico Sealy Integrado",
     style: "Contemporáneo",
@@ -192,9 +188,7 @@ export const PRODUCTS = [
       "/images/SEALY-MONTEREY-MOCHA/6.jpg"
     ],
     colors: [
-      { name: "Mocha", hex: "#6f5440", active: true },
-      { name: "Piper Blue", hex: "#2a5482", active: false },
-      { name: "Slate", hex: "#4b535d", active: false }
+      { name: "Mocha", hex: "#6f5440", active: true }
     ],
     material: "Microfibra Aterciopelada Café Mocha de Tacto Ultra Suave",
     style: "Clásico Moderno",
@@ -244,8 +238,7 @@ export const PRODUCTS = [
       "/images/SEALY-MONTEREY-SLATE/6.jpg"
     ],
     colors: [
-      { name: "Slate", hex: "#4b535d", active: true },
-      { name: "Mocha", hex: "#6f5440", active: false }
+      { name: "Slate", hex: "#4b535d", active: true }
     ],
     material: "Textil Gris Slate Neutral con Espuma Denser Sealy",
     style: "Minimalista",
@@ -293,9 +286,7 @@ export const PRODUCTS = [
       "/images/SEALY-GAMEDAY-RA A17-114/5.jpg"
     ],
     colors: [
-      { name: "Camel Arena", hex: "#b49b7e", active: true },
-      { name: "Grey", hex: "#7a8288", active: false },
-      { name: "Noir", hex: "#22252a", active: false }
+      { name: "Camel", hex: "#b49b7e", active: true }
     ],
     material: "Cuero Sintético Transpirable 'Air-Leather' con Mecanismo Reclinable Zero-Gravity",
     style: "Contemporáneo",
@@ -347,8 +338,7 @@ export const PRODUCTS = [
       "/images/SEALY-GAMEDAY-RG A4-175/5.jpg"
     ],
     colors: [
-      { name: "Grey", hex: "#7a8288", active: true },
-      { name: "Camel", hex: "#b49b7e", active: false }
+      { name: "Grey", hex: "#7a8288", active: true }
     ],
     material: "Tapiz Gris Plomo Textil Microfibra con acolchado multicapa Sealy",
     style: "Moderno",
@@ -397,7 +387,7 @@ export const PRODUCTS = [
       "/images/SEALY-GAMEDAY-RN 11233/6.jpg"
     ],
     colors: [
-      { name: "Noir / Negro Azabache", hex: "#1a1c20", active: true }
+      { name: "Noir", hex: "#1a1c20", active: true }
     ],
     material: "Ecopiel Premium Negro Mate con tratamiento atérmico",
     style: "Ejecutivo / Moderno",
@@ -446,8 +436,7 @@ export const PRODUCTS = [
       "/images/SEALY-KENNDY-CHIVE/6.jpg"
     ],
     colors: [
-      { name: "Verde Chive Oliva", hex: "#5d6b4f", active: true },
-      { name: "Beach Arena", hex: "#c9beaa", active: false }
+      { name: "Verde Oliva", hex: "#5d6b4f", active: true }
     ],
     material: "Textil Lino Chive Natural con Estructura de Madera Maciza y Espuma HR",
     style: "Mid-Century Modern",
@@ -499,8 +488,7 @@ export const PRODUCTS = [
       "/images/SEALY-KENNEDY-BEACH/6.jpg"
     ],
     colors: [
-      { name: "Beach Arena", hex: "#c9beaa", active: true },
-      { name: "Chive Oliva", hex: "#5d6b4f", active: false }
+      { name: "Beige", hex: "#c9beaa", active: true }
     ],
     material: "Textil Lino Natural tono Beach Arena con colchón Sealy Queen",
     style: "Escandinavo",
@@ -550,8 +538,7 @@ export const PRODUCTS = [
       "/images/SEALY-KLEIN-SCM/7.jpg"
     ],
     colors: [
-      { name: "Gris Perla", hex: "#a4a8ad", active: true },
-      { name: "Azul Marino", hex: "#1f3354", active: false }
+      { name: "Gris Perla", hex: "#a4a8ad", active: true }
     ],
     material: "Estructura Modular con Chaise Longue Reversible y Espuma Viscoelástica Sealy",
     style: "Lujo Contemporáneo",
@@ -603,8 +590,7 @@ export const PRODUCTS = [
       "/images/SEALY-MUSKOKA-TURQUESA/7.jpg"
     ],
     colors: [
-      { name: "Turquesa Vibrante", hex: "#1f8d9b", active: true },
-      { name: "Beach Arena", hex: "#c7bba8", active: false }
+      { name: "Turquesa", hex: "#1f8d9b", active: true }
     ],
     material: "Textil Acolchado Turquesa con Detalle Ribeteado y Patas de Roble",
     style: "Contemporáneo",
@@ -653,7 +639,7 @@ export const PRODUCTS = [
       "/images/SEALY-MUSKOCA-BEACH/6.jpg"
     ],
     colors: [
-      { name: "Beach Arena", hex: "#c7bba8", active: true }
+      { name: "Beige", hex: "#c7bba8", active: true }
     ],
     material: "Textil Lino Beige Beach con núcleo Sealy",
     style: "Minimalista",
@@ -701,8 +687,7 @@ export const PRODUCTS = [
       "/images/SEALY-SAMMYQUEEN-CHOCOLATE/6.jpg"
     ],
     colors: [
-      { name: "Chocolate Intenso", hex: "#4a3224", active: true },
-      { name: "Slate Gris", hex: "#525962", active: false }
+      { name: "Chocolate", hex: "#4a3224", active: true }
     ],
     material: "Microfibra Chocolate de Alta Resistencia con Colchón Sealy Posturepedic Queen Size",
     style: "Contemporáneo",
@@ -754,7 +739,7 @@ export const PRODUCTS = [
       "/images/SEALY-SAMMYQUEEN-SLATE/6.jpg"
     ],
     colors: [
-      { name: "Slate Gris", hex: "#525962", active: true }
+      { name: "Slate", hex: "#525962", active: true }
     ],
     material: "Textil Gris Slate con Colchón Sealy Queen",
     style: "Minimalista",
@@ -799,8 +784,7 @@ export const PRODUCTS = [
       "https://images.unsplash.com/photo-1577140917170-285929fb55b7?auto=format&fit=crop&w=1200&q=80"
     ],
     colors: [
-      { name: "Blanco Carrara & Oro", hex: "#f5f5f5", active: true },
-      { name: "Negro Marquina", hex: "#1c1c1c", active: false }
+      { name: "Blanco", hex: "#f5f5f5", active: true }
     ],
     material: "Cubierta de Mármol Sintético de Alta Densidad y Base Escultórica de Acero Dorado",
     style: "Lujo Contemporáneo",
@@ -846,8 +830,7 @@ export const PRODUCTS = [
       "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1200&q=80"
     ],
     colors: [
-      { name: "Gris Lino", hex: "#a8a69f", active: true },
-      { name: "Terracota", hex: "#b85d38", active: false }
+      { name: "Gris Lino", hex: "#a8a69f", active: true }
     ],
     material: "Madera de Fresno Natural y Tapiz Lino Acolchado",
     style: "Escandinavo",
@@ -892,8 +875,7 @@ export const PRODUCTS = [
       "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=1200&q=80"
     ],
     colors: [
-      { name: "Latón Cepillado", hex: "#d4af37", active: true },
-      { name: "Negro Mate", hex: "#1e1e1e", active: false }
+      { name: "Dorado", hex: "#d4af37", active: true }
     ],
     material: "Estructura de Latón Macizo con Base de Mármol Negro",
     style: "Mid-Century Modern",
@@ -938,8 +920,7 @@ export const PRODUCTS = [
       "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80"
     ],
     colors: [
-      { name: "Marfil & Arena", hex: "#ece7dd", active: true },
-      { name: "Gris Humo", hex: "#8c9096", active: false }
+      { name: "Marfil", hex: "#ece7dd", active: true }
     ],
     material: "100% Lana de Oveja y Llama Tejida a Mano con Base de Algodón",
     style: "Orgánico / Contemporáneo",
@@ -984,7 +965,7 @@ export const PRODUCTS = [
       "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1200&q=80"
     ],
     colors: [
-      { name: "Blanco Tiza & Terracota", hex: "#e5ded4", active: true }
+      { name: "Terracota", hex: "#e5ded4", active: true }
     ],
     material: "Cerámica Gres Horneada con Esmalte Mate Texturizado",
     style: "Minimalista Orgánico",
