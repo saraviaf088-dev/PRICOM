@@ -13,15 +13,16 @@ const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'pricom-secret-key-2026';
 
 // Email transporter configuration
-const transporter = nodemailer.createTransport({
+const SMTP_CONFIGURED = process.env.SMTP_USER && process.env.SMTP_PASS;
+const transporter = SMTP_CONFIGURED ? nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: process.env.SMTP_PORT || 587,
   secure: false,
   auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || ''
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
-});
+}) : null;
 
 // Generate verification token
 function generateVerificationToken() {
@@ -110,6 +111,10 @@ async function sendVerificationEmail(email, token, userName) {
   };
   
   try {
+    if (!transporter) {
+      console.log('⚠️ SMTP no configurado. Correo de verificación no enviado.');
+      return false;
+    }
     await transporter.sendMail(mailOptions);
     return true;
   } catch (error) {
@@ -173,12 +178,15 @@ app.post('/api/users/register', async (req, res) => {
     return res.status(400).json({ error: 'Este correo ya está registrado' });
   }
   
-  // Generate verification token
-  const verificationToken = generateVerificationToken();
-  const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-  
   // Hash password
   const hashedPassword = bcrypt.hashSync(password, 10);
+  
+  // Check if SMTP is configured
+  const emailConfigured = !!transporter;
+  
+  // Generate verification token only if SMTP is configured
+  const verificationToken = emailConfigured ? generateVerificationToken() : null;
+  const verificationExpires = emailConfigured ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null;
   
   const newUser = {
     id: uuidv4(),
@@ -187,9 +195,9 @@ app.post('/api/users/register', async (req, res) => {
     password: hashedPassword,
     phone: phone || '',
     nit: nit || '',
-    emailVerified: false,
+    emailVerified: !emailConfigured, // Auto-verify if SMTP not configured
     verificationToken,
-    verificationExpires: verificationExpires.toISOString(),
+    verificationExpires,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -197,20 +205,27 @@ app.post('/api/users/register', async (req, res) => {
   users.push(newUser);
   writeCollection('users', users);
   
-  // Send verification email
-  const emailSent = await sendVerificationEmail(email, verificationToken, name);
-  
-  if (emailSent) {
-    res.status(201).json({ 
-      message: 'Cuenta creada. Se ha enviado un correo de verificación a tu dirección de email.',
-      userId: newUser.id
-    });
+  if (emailConfigured) {
+    // Send verification email
+    const emailSent = await sendVerificationEmail(email, verificationToken, name);
+    
+    if (emailSent) {
+      res.status(201).json({ 
+        message: 'Cuenta creada. Se ha enviado un correo de verificación a tu dirección de email.',
+        userId: newUser.id
+      });
+    } else {
+      res.status(201).json({ 
+        message: 'Cuenta creada pero no se pudo enviar el correo de verificación. Contacta a soporte.',
+        userId: newUser.id,
+        warning: 'Email not sent'
+      });
+    }
   } else {
-    // Even if email fails, user is created but can't verify
+    // No SMTP configured - auto-verify and allow login
     res.status(201).json({ 
-      message: 'Cuenta creada pero no se pudo enviar el correo de verificación. Contacta a soporte.',
-      userId: newUser.id,
-      warning: 'Email not sent'
+      message: 'Cuenta creada exitosamente. Puedes iniciar sesión.',
+      userId: newUser.id
     });
   }
 });

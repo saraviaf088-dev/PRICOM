@@ -1,0 +1,15 @@
+[
+  {
+    "id": "9372f407-e4b6-41c8-aec7-75d7faafc80f",
+    "name": "fabian saravia",
+    "email": "saraviaf088@gmail.com",
+    "password": "$2a$10$ahnDmmiC6FgibVKpv7/izurqt3Wk1Z2RRa/96igRYj5S0dygLnXeq",
+    "phone": "76792298",
+    "nit": "",
+    "emailVerified": true,
+    "verificationToken": null,
+    "verificationExpires": null,
+    "createdAt": "2026-08-20T21:44:42.842Z",
+    "updatedAt": "2026-08-20T21:44:42.845Z"
+  }
+]
