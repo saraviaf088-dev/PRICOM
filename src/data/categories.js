@@ -14,7 +14,7 @@ export const CATEGORIES = [
   },
   {
     id: "reclinables",
-    name: "Recliners",
+    name: "Reclinables",
     slug: "reclinables",
     tagline: "Posición gravedad cero para descanso total",
     count: 5,
@@ -34,7 +34,7 @@ export const BRANDS = [
 export const NAVIGATION_LINKS = [
   { label: "Inicio", path: "#inicio" },
   { label: "Sofás Cama", path: "#catalogo", filter: { category: "Sofás Cama" } },
-  { label: "Recliners", path: "#catalogo", filter: { category: "Reclinables" } },
+  { label: "Reclinables", path: "#catalogo", filter: { category: "Reclinables" } },
   { label: "Ofertas", path: "#ofertas", isHighlight: true },
   { label: "Inspírate", path: "#inspirate" },
   { label: "Trabaja con Nosotros", path: "#promotores" },

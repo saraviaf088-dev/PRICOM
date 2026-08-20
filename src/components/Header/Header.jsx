@@ -12,7 +12,7 @@ import {
 const NAV_ICONS = {
   'Inicio': Home,
   'Sofás Cama': Armchair,
-  'Recliners': Armchair,
+  'Reclinables': Armchair,
   'Ofertas': Tag,
   'Inspírate': Compass,
   'Trabaja con Nosotros': Headphones,
