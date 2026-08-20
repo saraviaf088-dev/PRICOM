@@ -98,15 +98,19 @@ export function AppProvider({ children }) {
       .then(data => {
         if (data && Array.isArray(data) && data.length > 0) {
           setProducts(data);
+          // Also save to localStorage for offline/client-side fallback
+          localStorage.setItem('pricom_products', JSON.stringify(data));
         } else {
           // Server has no products, sync from local/initial data
           productsAPI.sync(initialProducts).then(() => {
             setProducts(initialProducts);
+            localStorage.setItem('pricom_products', JSON.stringify(initialProducts));
           }).catch(() => {});
         }
       })
       .catch(() => {
         // Safe fallback to initial/local storage products
+        setProducts(initialProducts);
       });
   }, []);
 
