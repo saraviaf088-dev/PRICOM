@@ -10,7 +10,7 @@ import {
 
 export default function Footer() {
   const navigate = useNavigate();
-  const { setFilters, setActiveModal, showToast } = useApp();
+  const { setFilters, openLegalModal, showToast } = useApp();
   const [newsletterEmail, setNewsletterEmail] = useState('');
 
   const handleNewsletterSubmit = (e) => {
@@ -83,21 +83,12 @@ export default function Footer() {
           <div>
             <h4 className="footer-col-title">Ayuda & Garantías</h4>
             <ul className="footer-links">
-              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Garantía Sealy 5 Años</a></li>
-              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Tiempos de Envío en Bolivia</a></li>
-              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Servicio de Armado Gratuito</a></li>
-              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Facturación con NIT / CI</a></li>
-              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Términos y Condiciones</a></li>
-              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Políticas de Privacidad</a></li>
-              <li>
-                <button 
-                  onClick={() => setActiveModal('admin')}
-                  style={{ color: 'var(--color-celeste)', fontSize: '0.82rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '0.5rem' }}
-                >
-                  <Settings size={14} />
-                  <span>Panel de Administración</span>
-                </button>
-              </li>
+              <li><button onClick={() => openLegalModal('garantia')} className="footer-link" style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>Garantía Sealy 5 Años</button></li>
+              <li><button onClick={() => openLegalModal('envios')} className="footer-link" style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>Tiempos de Envío en Bolivia</button></li>
+              <li><button onClick={() => openLegalModal('envios')} className="footer-link" style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>Servicio de Armado Gratuito</button></li>
+              <li><button onClick={() => openLegalModal('facturacion')} className="footer-link" style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>Facturación con NIT / CI</button></li>
+              <li><button onClick={() => openLegalModal('terminos')} className="footer-link" style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>Términos y Condiciones</button></li>
+              <li><button onClick={() => openLegalModal('privacidad')} className="footer-link" style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>Políticas de Privacidad</button></li>
             </ul>
           </div>
 

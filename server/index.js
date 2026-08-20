@@ -1,5 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
@@ -11,9 +14,28 @@ const { initDatabase, readCollection, writeCollection } = require('./database');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'pricom-secret-key-2026';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+
+// Middleware & Security
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? CORS_ORIGIN : true,
+  credentials: true
+}));
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(express.json({ limit: '10mb' }));
+
+// Rate limiters for auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  message: { error: 'Demasiados intentos. Por favor intenta más tarde.' }
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/users/login', authLimiter);
 
 // Email transporter configuration
-const SMTP_CONFIGURED = process.env.SMTP_USER && process.env.SMTP_PASS;
+const SMTP_CONFIGURED = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
 const transporter = SMTP_CONFIGURED ? nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: process.env.SMTP_PORT || 587,
@@ -31,7 +53,7 @@ function generateVerificationToken() {
 
 // Send verification email
 async function sendVerificationEmail(email, token, userName) {
-  const verificationUrl = `http://localhost:5173/verificar-email?token=${token}`;
+  const verificationUrl = `${FRONTEND_URL}/verificar-email?token=${token}`;
   
   const mailOptions = {
     from: '"PRICOM Bolivia" <noreply@pricom.bo>',
@@ -434,7 +456,7 @@ app.post('/api/users/forgot-password', async (req, res) => {
   writeCollection('users', users);
   
   // Send reset email
-  const resetUrl = `http://localhost:5173/restablecer-password?token=${resetToken}`;
+  const resetUrl = `${FRONTEND_URL}/restablecer-password?token=${resetToken}`;
   
   const mailOptions = {
     from: '"PRICOM Bolivia" <noreply@pricom.bo>',
@@ -613,6 +635,21 @@ app.delete('/api/products/:id', authMiddleware, (req, res) => {
 // ==================== ORDER ROUTES ====================
 
 app.post('/api/orders', (req, res) => {
+  const items = req.body.items || [];
+  if (items.length === 0) {
+    return res.status(400).json({ error: 'El carrito no contiene productos' });
+  }
+
+  // Stock check
+  const products = readCollection('products');
+  for (const item of items) {
+    const prodId = item.product?.id || item.id;
+    const prod = products.find(p => p.id === prodId);
+    if (prod && prod.stockCount !== undefined && prod.stockCount < item.quantity) {
+      return res.status(400).json({ error: `Stock insuficiente para "${prod.name}". Quedan ${prod.stockCount} unidades disponibles.` });
+    }
+  }
+
   const orders = readCollection('orders');
   const orderId = uuidv4();
   const orderNumber = `PR-${Date.now().toString().slice(-6)}`;

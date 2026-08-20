@@ -5,12 +5,15 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import ProductPage from './pages/ProductPage';
 import CheckoutPage from './pages/CheckoutPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import AdminPage from './pages/AdminPage';
 
 // ── Lazy loaded (only when needed) ──
 const CartDrawer = lazy(() => import('./components/CartDrawer/CartDrawer'));
 const WishlistDrawer = lazy(() => import('./components/WishlistDrawer/WishlistDrawer'));
 const UserAccountModal = lazy(() => import('./components/UserAccountModal/UserAccountModal'));
 const AdminModal = lazy(() => import('./components/AdminModal/AdminModal'));
+const LegalModal = lazy(() => import('./components/LegalModals/LegalModal'));
 
 // ── Loading fallback for lazy components ──
 function ModalFallback() {
@@ -71,6 +74,7 @@ function AppShell() {
       <WishlistDrawer />
       <UserAccountModal />
       <AdminModal />
+      <LegalModal />
     </Suspense>
   );
 }
@@ -85,6 +89,8 @@ export default function App() {
             <Route path="/producto/:slug" element={<ProductPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/verificar-email" element={<VerifyEmailPage />} />
+            <Route path="/restablecer-password" element={<ResetPasswordPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
           <AppShell />
         </BrowserRouter>

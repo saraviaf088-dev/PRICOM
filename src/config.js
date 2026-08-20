@@ -1,11 +1,11 @@
 // ==========================================================================
 // PRICOM GLOBAL CONFIGURATION
-// Centraliza valores que antes estaban hardcodeados en múltiples archivos.
+// Centraliza valores de configuración global.
 // ==========================================================================
 
 export const CONFIG = {
   // API
-  API_URL: 'http://localhost:3001',
+  API_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
 
   // WhatsApp
   WHATSAPP_NUMBER: '59176740940',
@@ -27,12 +27,6 @@ export const CONFIG = {
     ADMIN_AUTH: 'pricom_admin_auth',
     ADMIN_TOKEN: 'pricom_admin_token',
     OFFERS_END: 'pricom_offers_end',
-  },
-
-  // Admin credentials (for demo — in production, use a backend)
-  ADMIN_CREDENTIALS: {
-    username: 'admin',
-    password: 'pricom2026',
   },
 
   // Limits

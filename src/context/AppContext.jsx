@@ -65,6 +65,25 @@ export function AppProvider({ children }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [checkoutStep, setCheckoutStep] = useState(1);
+  const [legalTab, setLegalTab] = useState('garantia');
+
+  const openLegalModal = useCallback((tab = 'garantia') => {
+    setLegalTab(tab);
+    setActiveModal('legal');
+  }, []);
+
+  // ── Load live products from backend on mount ──
+  useEffect(() => {
+    productsAPI.getAll()
+      .then(data => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          setProducts(data);
+        }
+      })
+      .catch(() => {
+        // Safe fallback to initial/local storage products
+      });
+  }, []);
 
   // ── User Profile Store ──
   const [user, setUser] = useState(() =>
@@ -325,12 +344,6 @@ export function AppProvider({ children }) {
       showToast('Acceso Autorizado', 'Bienvenido al panel de administración.', 'success');
       return true;
     } catch (err) {
-      // Fallback to local auth
-      if (username === CONFIG.ADMIN_CREDENTIALS.username && password === CONFIG.ADMIN_CREDENTIALS.password) {
-        setIsAdminAuth(true);
-        showToast('Acceso Autorizado', 'Bienvenido al panel de administración (modo local).', 'success');
-        return true;
-      }
       showToast('Acceso Denegado', err.message || 'Credenciales incorrectas.', 'warning');
       return false;
     }
@@ -488,7 +501,9 @@ export function AppProvider({ children }) {
     openProductDetail,
     openQuickView,
     openArticle,
-    closeModal,
+    legalTab,
+    setLegalTab,
+    openLegalModal,
     isAdminAuth,
     adminToken,
     adminStats,
@@ -514,6 +529,7 @@ export function AppProvider({ children }) {
     updateCartQuantity, clearCart, toggleWishlist, isInWishlist,
     toggleComparator, isInComparator, clearComparator,
     openProductDetail, openQuickView, openArticle, closeModal,
+    legalTab, openLegalModal,
     recordSearch, resetFilters, setTheme, setSearchQuery,
     setFilters, setActiveModal, setSelectedProduct,
     setSelectedArticle, setCheckoutStep, setUser,

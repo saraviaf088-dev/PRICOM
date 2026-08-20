@@ -172,10 +172,6 @@ export default function AdminModal() {
               <Lock size={16} />
               <span>Iniciar Sesión</span>
             </button>
-
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '1rem' }}>
-              Demo: usuario <strong>admin</strong> / contraseña <strong>pricom2026</strong>
-            </p>
           </form>
         </div>
       </div>

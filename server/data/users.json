@@ -10,6 +10,8 @@
     "verificationToken": null,
     "verificationExpires": null,
     "createdAt": "2026-08-20T21:44:42.842Z",
-    "updatedAt": "2026-08-20T21:44:42.845Z"
+    "updatedAt": "2026-08-20T21:44:42.845Z",
+    "resetPasswordToken": "213954b4b26bfc687436e74be91ccbfb4a3565f887fcdf6b537f8025c8407bdd",
+    "resetPasswordExpires": "2026-08-20T22:49:33.090Z"
   }
 ]
