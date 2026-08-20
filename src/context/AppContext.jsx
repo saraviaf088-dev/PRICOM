@@ -78,6 +78,11 @@ export function AppProvider({ children }) {
       .then(data => {
         if (data && Array.isArray(data) && data.length > 0) {
           setProducts(data);
+        } else {
+          // Server has no products, sync from local/initial data
+          productsAPI.sync(initialProducts).then(() => {
+            setProducts(initialProducts);
+          }).catch(() => {});
         }
       })
       .catch(() => {

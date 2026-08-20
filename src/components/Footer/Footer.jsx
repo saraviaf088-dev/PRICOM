@@ -10,7 +10,7 @@ import {
 
 export default function Footer() {
   const navigate = useNavigate();
-  const { setFilters, openLegalModal, showToast } = useApp();
+  const { setFilters, setActiveModal, openLegalModal, showToast } = useApp();
   const [newsletterEmail, setNewsletterEmail] = useState('');
 
   const handleNewsletterSubmit = (e) => {
@@ -137,6 +137,21 @@ export default function Footer() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
             <span>Pagos Seguros: QR Simple • Tigo Money • Visa • Mastercard • BCP • BNB</span>
+            <button 
+              onClick={() => setActiveModal('admin')}
+              style={{ 
+                background: 'none', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px',
+                padding: '4px 10px', color: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => { e.target.style.color = '#fff'; e.target.style.borderColor = 'rgba(255,255,255,0.5)'; }}
+              onMouseLeave={(e) => { e.target.style.color = 'rgba(255,255,255,0.5)'; e.target.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+              title="Panel de Administración"
+            >
+              <Settings size={12} />
+              Admin
+            </button>
           </div>
         </div>
       </div>
