@@ -2,8 +2,8 @@
   {
     "id": 1,
     "username": "admin",
-    "password": "$2a$10$o0RCP7UBIN0oiflkn5jiKe9L058sD9Hyk3mxfAGudIlgUMrCw8Yuq",
+    "password": "$2a$10$YgtjV3zHhIiIRPyCIQvfXOJ11gPeHrOslaoAFw1EyN2F8sakg0PDu",
     "role": "admin",
-    "createdAt": "2026-08-19T22:54:32.728Z"
+    "createdAt": "2026-08-20T00:00:00.000Z"
   }
 ]
