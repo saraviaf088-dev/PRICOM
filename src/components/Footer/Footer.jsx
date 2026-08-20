@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { CONFIG } from '../../config';
 import { SHOWROOMS } from '../../data/showrooms';
-import { 
-  MapPin, Phone, Mail, MessageCircle, Send, ShieldCheck, 
-  Truck, CreditCard, Lock, Smartphone, Settings 
+import {
+  MapPin, Phone, Mail, MessageCircle, Send, ShieldCheck,
+  Truck, CreditCard, Lock, Smartphone, Settings
 } from 'lucide-react';
 
 export default function Footer() {
+  const navigate = useNavigate();
   const { setFilters, setActiveModal, showToast } = useApp();
   const [newsletterEmail, setNewsletterEmail] = useState('');
 
@@ -21,8 +23,19 @@ export default function Footer() {
 
   const handleCategoryClick = (cat) => {
     setFilters(prev => ({ ...prev, category: cat }));
-    const el = document.getElementById('catalogo');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (window.location.pathname === '/') {
+      const el = document.getElementById('catalogo');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/#catalogo');
+    }
+  };
+
+  const handleHomeLink = (e) => {
+    if (window.location.pathname !== '/') {
+      e.preventDefault();
+      navigate('/#inicio');
+    }
   };
 
   return (
@@ -70,12 +83,12 @@ export default function Footer() {
           <div>
             <h4 className="footer-col-title">Ayuda & Garantías</h4>
             <ul className="footer-links">
-              <li><a href="#inicio" className="footer-link">Garantía Sealy 5 Años</a></li>
-              <li><a href="#inicio" className="footer-link">Tiempos de Envío en Bolivia</a></li>
-              <li><a href="#inicio" className="footer-link">Servicio de Armado Gratuito</a></li>
-              <li><a href="#inicio" className="footer-link">Facturación con NIT / CI</a></li>
-              <li><a href="#inicio" className="footer-link">Términos y Condiciones</a></li>
-              <li><a href="#inicio" className="footer-link">Políticas de Privacidad</a></li>
+              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Garantía Sealy 5 Años</a></li>
+              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Tiempos de Envío en Bolivia</a></li>
+              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Servicio de Armado Gratuito</a></li>
+              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Facturación con NIT / CI</a></li>
+              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Términos y Condiciones</a></li>
+              <li><a href="#inicio" onClick={handleHomeLink} className="footer-link">Políticas de Privacidad</a></li>
               <li>
                 <button 
                   onClick={() => setActiveModal('admin')}

@@ -10,7 +10,6 @@ function ProductCard({ product }) {
   const {
     isInWishlist, toggleWishlist,
     isInComparator, toggleComparator,
-    openQuickView,
   } = useApp();
 
   const [imgError, setImgError] = useState(false);
@@ -96,7 +95,7 @@ function ProductCard({ product }) {
 
           <button
             className="card-action-btn"
-            onClick={() => openQuickView(product)}
+            onClick={() => navigate(`/producto/${product.slug}`)}
             title="Vista Rápida"
             aria-label="Vista rápida del producto"
           >

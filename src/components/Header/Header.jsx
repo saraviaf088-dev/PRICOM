@@ -6,7 +6,7 @@ import { CATEGORIES, NAVIGATION_LINKS } from '../../data/categories';
 import {
   Search, Heart, ShoppingBag, Scale, User, Moon, Sun, Monitor,
   Menu, X, Phone, MessageCircle, Sparkles, MapPin, Truck, ShieldCheck, Clock,
-  Home, Armchair, Tag, Compass, Headphones
+  Home, Armchair, Tag, Compass, Headphones, Grid3X3
 } from 'lucide-react';
 
 const NAV_ICONS = {
@@ -70,8 +70,12 @@ export default function Header() {
     if (searchQuery.trim()) {
       recordSearch(searchQuery);
       setIsSearchOpen(false);
-      const catalogEl = document.getElementById('catalogo');
-      if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+      if (window.location.pathname === '/') {
+        const catalogEl = document.getElementById('catalogo');
+        if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        navigate('/');
+      }
     }
   };
 
@@ -79,15 +83,23 @@ export default function Header() {
     setSearchQuery(term);
     recordSearch(term);
     setIsSearchOpen(false);
-    const catalogEl = document.getElementById('catalogo');
-    if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+    if (window.location.pathname === '/') {
+      const catalogEl = document.getElementById('catalogo');
+      if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
   };
 
   const handleCategoryNav = (catName) => {
     setFilters(prev => ({ ...prev, category: catName, subCategory: 'all' }));
     setIsMobileMenuOpen(false);
-    const catalogEl = document.getElementById('catalogo');
-    if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+    if (window.location.pathname === '/') {
+      const catalogEl = document.getElementById('catalogo');
+      if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
   };
 
   return (
@@ -101,7 +113,12 @@ export default function Header() {
           </div>
 
           <div className="topbar-links">
-            <a href="#contacto" className="topbar-link">
+            <a href="#contacto" className="topbar-link" onClick={(e) => {
+              if (window.location.pathname !== '/') {
+                e.preventDefault();
+                navigate('/#contacto');
+              }
+            }}>
               <MapPin size={13} />
               <span>Nuestros Showrooms</span>
             </a>
@@ -157,7 +174,7 @@ export default function Header() {
           </button>
 
           {/* Logo & Sealy badge */}
-          <a href="#inicio" className="brand-wrapper">
+          <a href="/" className="brand-wrapper" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
             <img src="/iconos/logo%20pricom.png" alt="PRICOM Bolivia" className="brand-logo" />
             <div className="brand-partner-badge">
               <img src="/iconos/logo%20sealy.png" alt="Sealy Official Partner" className="sealy-mini-logo" />
@@ -312,19 +329,22 @@ export default function Header() {
           </div>
         </div>
 
-        {/* 3. NAVIGATION BAR */}
+          {/* 3. NAVIGATION BAR */}
         <nav className="nav-bar">
           <div className="container">
             <ul className="nav-links">
               {NAVIGATION_LINKS.map((link, idx) => (
                 <li key={idx}>
-                  <a 
-                    href={link.path} 
+                  <a
+                    href={link.path}
                     className={`nav-link-item ${link.isHighlight ? 'highlight' : ''}`}
                     onClick={(e) => {
                       if (link.filter) {
                         e.preventDefault();
                         handleCategoryNav(link.filter.category);
+                      } else if (window.location.pathname !== '/') {
+                        e.preventDefault();
+                        navigate(`/${link.path}`);
                       }
                     }}
                   >
@@ -370,6 +390,9 @@ export default function Header() {
                   if (link.filter) {
                     e.preventDefault();
                     handleCategoryNav(link.filter.category);
+                  } else if (window.location.pathname !== '/') {
+                    e.preventDefault();
+                    navigate(`/${link.path}`);
                   }
                   setIsMobileMenuOpen(false);
                 }}
