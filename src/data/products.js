@@ -266,7 +266,7 @@ export const PRODUCTS = [
   {
     id: "sealy-gameday-ra",
     slug: "sillon-reclinable-sealy-gameday-ra",
-    name: "Sealy Gameday RA Recliner",
+    name: "Sealy Gameday Azul",
     brand: "Sealy",
     category: "Reclinables",
     subCategory: "Sillones Reclinables de Lujo",
@@ -286,7 +286,7 @@ export const PRODUCTS = [
       "/images/SEALY-GAMEDAY-RA A17-114/5.jpg"
     ],
     colors: [
-      { name: "Camel", hex: "#b49b7e", active: true }
+      { name: "Azul", hex: "#1e3a5f", active: true }
     ],
     material: "Cuero Sintético Transpirable 'Air-Leather' con Mecanismo Reclinable Zero-Gravity",
     style: "Contemporáneo",
