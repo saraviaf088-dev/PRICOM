@@ -307,110 +307,109 @@ export default function AdminModal({ fullPage = false }) {
 
   // ── Login Screen ──
   if (!isAdminAuth) {
-    const loginContent = (
-      <div style={{ maxWidth: '420px', margin: fullPage ? '4rem auto' : undefined }}>
-        <div className="drawer-header" style={{ backgroundColor: 'var(--color-azul-oscuro)', color: '#fff', borderRadius: fullPage ? 'var(--radius-md) var(--radius-md) 0 0' : undefined }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Lock size={22} color="var(--color-celeste)" />
-            <h3 style={{ fontSize: '1.25rem', color: '#fff' }}>Acceso Administrador</h3>
+    const loginFormEl = (
+      <form onSubmit={handleLogin} style={{ padding: '2rem' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+          Ingresa tus credenciales de administrador para acceder al panel de gestión.
+        </p>
+        <div className="form-group">
+          <label className="form-label">Usuario</label>
+          <input type="text" className="form-input" value={loginForm.username} onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))} placeholder="Ej: admin" required autoFocus />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Contraseña</label>
+          <div style={{ position: 'relative' }}>
+            <input type={showPassword ? 'text' : 'password'} className="form-input" value={loginForm.password} onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))} placeholder="Ingresa tu contraseña" required style={{ paddingRight: '2.5rem' }} />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
-          {!fullPage && (
+        </div>
+        <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '0.5rem' }}>
+          <Lock size={16} />
+          <span>Iniciar Sesión</span>
+        </button>
+        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          Credenciales por defecto: admin / PricomOficial2026!
+        </p>
+      </form>
+    );
+
+    if (fullPage) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', backgroundColor: 'var(--bg-primary)' }}>
+          <div style={{ maxWidth: '420px', width: '100%', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
+            <div className="drawer-header" style={{ backgroundColor: 'var(--color-azul-oscuro)', color: '#fff', borderRadius: 'var(--radius-md) var(--radius-md) 0 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Lock size={22} color="var(--color-celeste)" />
+                <h3 style={{ fontSize: '1.25rem', color: '#fff' }}>Acceso Administrador</h3>
+              </div>
+            </div>
+            {loginFormEl}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="modal-overlay" onClick={() => setActiveModal(null)} role="dialog" aria-modal="true" aria-label="Acceso administrador">
+        <div className="modal-container" style={{ maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="drawer-header" style={{ backgroundColor: 'var(--color-azul-oscuro)', color: '#fff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <Lock size={22} color="var(--color-celeste)" />
+              <h3 style={{ fontSize: '1.25rem', color: '#fff' }}>Acceso Administrador</h3>
+            </div>
             <button onClick={() => setActiveModal(null)} style={{ color: '#fff' }}>
               <X size={20} />
             </button>
-          )}
-        </div>
-
-          <form onSubmit={handleLogin} style={{ padding: '2rem' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem', textAlign: 'center' }}>
-              Ingresa tus credenciales de administrador para acceder al panel de gestión.
-            </p>
-
-            <div className="form-group">
-              <label className="form-label">Usuario</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={loginForm.username}
-                onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
-                placeholder="Ej: admin"
-                required
-                autoFocus
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Contraseña</label>
-              <div style={{ position: 'relative' }}>
-                <input 
-                  type={showPassword ? 'text' : 'password'}
-                  className="form-input" 
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Ingresa tu contraseña"
-                  required
-                  style={{ paddingRight: '2.5rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '0.5rem' }}>
-              <Lock size={16} />
-              <span>Iniciar Sesión</span>
-            </button>
-
-            <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Credenciales por defecto: admin / PricomOficial2026!
-            </p>
-          </form>
+          </div>
+          {loginFormEl}
         </div>
       </div>
     );
   }
 
   // ── Admin Dashboard ──
-  return (
-    <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-      <div className="modal-container" style={{ maxWidth: '1100px' }} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="drawer-header" style={{ backgroundColor: 'var(--color-azul-oscuro)', color: '#fff' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <LayoutDashboard size={22} color="var(--color-celeste)" />
-            <h3 style={{ fontSize: '1.25rem', color: '#fff' }}>Panel de Administración PRICOM</h3>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button 
-              onClick={loadDashboardData}
-              className="btn btn-outline btn-sm"
-              style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}
-              disabled={loading}
-            >
-              <RefreshCw size={14} className={loading ? 'spin' : ''} />
-              <span>Actualizar</span>
-            </button>
-            <button 
-              onClick={adminLogout}
-              className="btn btn-outline btn-sm"
-              style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}
-            >
-              <LogOut size={14} />
-              <span>Cerrar Sesión</span>
-            </button>
+  const dashboardContent = (
+    <>
+      {/* Header */}
+      <div className="drawer-header" style={{ backgroundColor: 'var(--color-azul-oscuro)', color: '#fff', borderRadius: fullPage ? 'var(--radius-md) var(--radius-md) 0 0' : undefined }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <LayoutDashboard size={22} color="var(--color-celeste)" />
+          <h3 style={{ fontSize: '1.25rem', color: '#fff' }}>Panel de Administración PRICOM</h3>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button 
+            onClick={loadDashboardData}
+            className="btn btn-outline btn-sm"
+            style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}
+            disabled={loading}
+          >
+            <RefreshCw size={14} className={loading ? 'spin' : ''} />
+            <span>Actualizar</span>
+          </button>
+          <button 
+            onClick={adminLogout}
+            className="btn btn-outline btn-sm"
+            style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}
+          >
+            <LogOut size={14} />
+            <span>Cerrar Sesión</span>
+          </button>
+          {!fullPage && (
             <button onClick={() => setActiveModal(null)} style={{ color: '#fff' }}>
               <X size={20} />
             </button>
-          </div>
+          )}
+          {fullPage && (
+            <button onClick={() => window.close()} style={{ color: '#fff' }}>
+              <X size={20} />
+            </button>
+          )}
         </div>
+      </div>
 
-        {/* Tab Navigation */}
+      {/* Tab Navigation */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
           {[
             { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -829,6 +828,23 @@ export default function AdminModal({ fullPage = false }) {
             </div>
           </div>
         )}
+    </>
+  );
+
+  if (fullPage) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '1rem' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
+          {dashboardContent}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+      <div className="modal-container" style={{ maxWidth: '1100px' }} onClick={(e) => e.stopPropagation()}>
+        {dashboardContent}
       </div>
     </div>
   );

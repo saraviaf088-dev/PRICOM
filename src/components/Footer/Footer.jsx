@@ -10,7 +10,7 @@ import {
 
 export default function Footer() {
   const navigate = useNavigate();
-  const { setFilters, setActiveModal, openLegalModal, showToast } = useApp();
+  const { setFilters, openLegalModal, showToast } = useApp();
   const [newsletterEmail, setNewsletterEmail] = useState('');
 
   const handleNewsletterSubmit = (e) => {
@@ -138,7 +138,7 @@ export default function Footer() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>
             <span>Pagos Seguros: QR Simple • Tigo Money • Visa • Mastercard • BCP • BNB</span>
             <button 
-              onClick={() => setActiveModal('admin')}
+              onClick={() => window.open('/admin', '_blank')}
               style={{ 
                 background: 'none', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px',
                 padding: '4px 10px', color: 'rgba(255,255,255,0.5)', cursor: 'pointer',

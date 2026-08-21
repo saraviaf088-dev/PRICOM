@@ -12,7 +12,6 @@ import AdminPage from './pages/AdminPage';
 const CartDrawer = lazy(() => import('./components/CartDrawer/CartDrawer'));
 const WishlistDrawer = lazy(() => import('./components/WishlistDrawer/WishlistDrawer'));
 const UserAccountModal = lazy(() => import('./components/UserAccountModal/UserAccountModal'));
-const AdminModal = lazy(() => import('./components/AdminModal/AdminModal'));
 const LegalModal = lazy(() => import('./components/LegalModals/LegalModal'));
 
 // ── Loading fallback for lazy components ──
@@ -73,7 +72,6 @@ function AppShell() {
       <CartDrawer />
       <WishlistDrawer />
       <UserAccountModal />
-      <AdminModal />
       <LegalModal />
     </Suspense>
   );
