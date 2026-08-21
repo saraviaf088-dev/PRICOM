@@ -221,6 +221,38 @@ export const ordersAPI = {
     }
     return { message: 'Estado actualizado' };
   },
+
+  update: async (id, data) => {
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      return request(`/orders/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    }
+    const stored = localStorage.getItem('pricom_orders');
+    const orders = stored ? JSON.parse(stored) : [];
+    const index = orders.findIndex(o => o.id === id);
+    if (index !== -1) {
+      orders[index] = { ...orders[index], ...data, updatedAt: new Date().toISOString() };
+      localStorage.setItem('pricom_orders', JSON.stringify(orders));
+    }
+    return { message: 'Pedido actualizado' };
+  },
+
+  delete: async (id) => {
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      return request(`/orders/${id}`, {
+        method: 'DELETE',
+      });
+    }
+    const stored = localStorage.getItem('pricom_orders');
+    const orders = stored ? JSON.parse(stored) : [];
+    const filtered = orders.filter(o => o.id !== id);
+    localStorage.setItem('pricom_orders', JSON.stringify(filtered));
+    return { message: 'Pedido eliminado' };
+  },
 };
 
 // ==================== PAYMENTS ====================
@@ -269,6 +301,35 @@ export const statsAPI = {
       recentOrders: orders.slice(0, 10),
       topProducts: [],
       salesByCategory: []
+    };
+  },
+
+  getMonthlySales: async (year) => {
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      return request(`/stats/monthly-sales?year=${year}`);
+    }
+    const storedOrders = localStorage.getItem('pricom_orders');
+    const orders = storedOrders ? JSON.parse(storedOrders) : [];
+    const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const monthly = labels.map((label, i) => {
+      const monthOrders = orders.filter(o => {
+        const d = new Date(o.createdAt);
+        return d.getFullYear() === year && d.getMonth() === i && ['paid', 'delivered'].includes(o.orderStatus);
+      });
+      return {
+        month: i,
+        label,
+        revenue: monthOrders.reduce((sum, o) => sum + (o.total || 0), 0),
+        orders: monthOrders.length,
+        itemsSold: monthOrders.reduce((sum, o) => sum + (o.items || []).reduce((s, item) => s + item.quantity, 0), 0)
+      };
+    });
+    return {
+      year,
+      monthly,
+      totalRevenue: monthly.reduce((sum, m) => sum + m.revenue, 0),
+      totalOrders: monthly.reduce((sum, m) => sum + m.orders, 0)
     };
   },
 };

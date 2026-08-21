@@ -111,6 +111,10 @@ const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, 
           <input type="checkbox" checked={product.isFeatured} onChange={(e) => onChange({ ...product, isFeatured: e.target.checked })} />
           Destacado
         </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem', color: product.isHidden ? 'var(--color-danger)' : undefined }}>
+          <input type="checkbox" checked={product.isHidden || false} onChange={(e) => onChange({ ...product, isHidden: e.target.checked })} />
+          Oculto
+        </label>
       </div>
     </div>
 

@@ -610,6 +610,7 @@ app.post('/api/products', authMiddleware, async (req, res) => {
     isOffer: req.body.isOffer || false,
     isNew: req.body.isNew || false,
     isFeatured: req.body.isFeatured || false,
+    isHidden: req.body.isHidden || false,
     rating: req.body.rating || 4.8,
     reviewCount: req.body.reviewCount || 0,
     images: req.body.images || [],
@@ -760,6 +761,30 @@ app.put('/api/orders/:id/status', authMiddleware, async (req, res) => {
   
   await updateInCollection('orders', req.params.id, updates);
   res.json({ message: 'Estado actualizado' });
+});
+
+app.put('/api/orders/:id', authMiddleware, async (req, res) => {
+  const orders = await readCollection('orders');
+  const index = orders.findIndex(o => o.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Pedido no encontrado' });
+
+  const allowedFields = ['customerName', 'customerEmail', 'customerPhone', 'customerNIT', 'deliveryType', 'department', 'city', 'zone', 'address', 'reference', 'selectedShowroom', 'paymentMethod', 'notes'];
+  const updates = { updatedAt: new Date().toISOString() };
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) updates[field] = req.body[field];
+  }
+
+  await updateInCollection('orders', req.params.id, updates);
+  res.json({ message: 'Pedido actualizado', order: { ...orders[index], ...updates } });
+});
+
+app.delete('/api/orders/:id', authMiddleware, async (req, res) => {
+  const orders = await readCollection('orders');
+  const index = orders.findIndex(o => o.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Pedido no encontrado' });
+
+  await deleteFromCollection('orders', req.params.id);
+  res.json({ message: 'Pedido eliminado' });
 });
 
 // ==================== PAYMENT ROUTES ====================
@@ -931,6 +956,35 @@ app.get('/api/stats/dashboard', authMiddleware, async (req, res) => {
     topProducts,
     salesByCategory
   });
+});
+
+app.get('/api/stats/monthly-sales', authMiddleware, async (req, res) => {
+  const orders = await readCollection('orders');
+  const { year } = req.query;
+  const targetYear = parseInt(year) || new Date().getFullYear();
+
+  const monthlyData = Array.from({ length: 12 }, (_, i) => ({
+    month: i,
+    label: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][i],
+    revenue: 0,
+    orders: 0,
+    itemsSold: 0
+  }));
+
+  for (const order of orders) {
+    const date = new Date(order.createdAt);
+    if (date.getFullYear() === targetYear && ['paid', 'delivered'].includes(order.orderStatus)) {
+      const month = date.getMonth();
+      monthlyData[month].revenue += order.total;
+      monthlyData[month].orders += 1;
+      monthlyData[month].itemsSold += (order.items || []).reduce((sum, item) => sum + item.quantity, 0);
+    }
+  }
+
+  const totalRevenue = monthlyData.reduce((sum, m) => sum + m.revenue, 0);
+  const totalOrders = monthlyData.reduce((sum, m) => sum + m.orders, 0);
+
+  res.json({ year: targetYear, monthly: monthlyData, totalRevenue, totalOrders });
 });
 
 // ==================== SYNC ROUTES ====================

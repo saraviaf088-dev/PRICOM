@@ -436,6 +436,44 @@ export function AppProvider({ children }) {
     }
   }, [showToast]);
 
+  const adminUpdateOrder = useCallback(async (orderId, data) => {
+    try {
+      await ordersAPI.update(orderId, data);
+      setAdminOrders(prev => prev.map(o =>
+        o.id === orderId ? { ...o, ...data } : o
+      ));
+      showToast('Pedido Actualizado', 'Los datos del pedido fueron modificados.', 'success');
+      return true;
+    } catch (err) {
+      showToast('Error', err.message || 'No se pudo actualizar el pedido', 'warning');
+      return false;
+    }
+  }, [showToast]);
+
+  const adminDeleteOrder = useCallback(async (orderId) => {
+    try {
+      await ordersAPI.delete(orderId);
+      setAdminOrders(prev => prev.filter(o => o.id !== orderId));
+      showToast('Pedido Eliminado', 'El pedido fue eliminado permanentemente.', 'info');
+      return true;
+    } catch (err) {
+      showToast('Error', err.message || 'No se pudo eliminar el pedido', 'warning');
+      return false;
+    }
+  }, [showToast]);
+
+  const [monthlySales, setMonthlySales] = useState(null);
+  const fetchMonthlySales = useCallback(async (year) => {
+    try {
+      const data = await statsAPI.getMonthlySales(year);
+      setMonthlySales(data);
+      return data;
+    } catch (err) {
+      console.error('Error fetching monthly sales:', err);
+      return null;
+    }
+  }, []);
+
   const createOrder = useCallback(async (orderData) => {
     try {
       const result = await ordersAPI.create(orderData);
@@ -581,6 +619,10 @@ export function AppProvider({ children }) {
     fetchAdminStats,
     fetchAdminOrders,
     updateOrderStatus,
+    adminUpdateOrder,
+    adminDeleteOrder,
+    monthlySales,
+    fetchMonthlySales,
     createOrder,
     processPayment,
     syncProductsToServer,
@@ -601,6 +643,7 @@ export function AppProvider({ children }) {
     adminLogin, adminLogout, adminAddProduct,
     adminUpdateProduct, adminDeleteProduct,
     fetchAdminStats, fetchAdminOrders, updateOrderStatus,
+    adminUpdateOrder, adminDeleteOrder, monthlySales, fetchMonthlySales,
     createOrder, processPayment, syncProductsToServer,
   ]);
 
