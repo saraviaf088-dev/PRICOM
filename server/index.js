@@ -9,7 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const path = require('path');
-const { initDatabase, readCollection, writeCollection } = require('./database');
+const { initDatabase, readCollection, writeCollection, addToCollection, updateInCollection, deleteFromCollection } = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,10 +18,6 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 
 // Middleware & Security
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? CORS_ORIGIN : true,
-  credentials: true
-}));
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: '10mb' }));
 
@@ -148,7 +144,7 @@ async function sendVerificationEmail(email, token, userName) {
 // Initialize database
 initDatabase();
 
-// Middleware
+// CORS with specific allowed origins
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -158,7 +154,6 @@ app.use(cors({
   ],
   credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
 
 // Disable caching for all API responses
 app.use((req, res, next) => {
@@ -187,9 +182,9 @@ function authMiddleware(req, res, next) {
 
 // ==================== AUTH ROUTES ====================
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
-  const admins = readCollection('admins');
+  const admins = await readCollection('admins');
   
   // Check DB admins first
   let admin = admins.find(a => a.username === username);
@@ -201,8 +196,7 @@ app.post('/api/auth/login', (req, res) => {
     if (!admin) {
       const hashedPassword = bcrypt.hashSync('PricomOficial2026!', 10);
       const newAdmin = { id: 'admin-1', username: 'admin', password: hashedPassword, role: 'admin', createdAt: new Date().toISOString() };
-      admins.push(newAdmin);
-      writeCollection('admins', admins);
+      await addToCollection('admins', newAdmin);
       admin = newAdmin;
     }
   }
@@ -226,7 +220,7 @@ app.post('/api/users/register', async (req, res) => {
     return res.status(400).json({ error: 'Nombre, correo y contraseña son requeridos' });
   }
   
-  const users = readCollection('users');
+  const users = await readCollection('users');
   
   // Check if email already exists
   const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
@@ -258,8 +252,7 @@ app.post('/api/users/register', async (req, res) => {
     updatedAt: new Date().toISOString()
   };
   
-  users.push(newUser);
-  writeCollection('users', users);
+  await addToCollection('users', newUser);
   
   if (emailConfigured) {
     // Send verification email
@@ -287,14 +280,14 @@ app.post('/api/users/register', async (req, res) => {
 });
 
 // Verify Email
-app.get('/api/users/verify-email', (req, res) => {
+app.get('/api/users/verify-email', async (req, res) => {
   const { token } = req.query;
   
   if (!token) {
     return res.status(400).json({ error: 'Token de verificación requerido' });
   }
   
-  const users = readCollection('users');
+  const users = await readCollection('users');
   const user = users.find(u => u.verificationToken === token);
   
   if (!user) {
@@ -307,13 +300,12 @@ app.get('/api/users/verify-email', (req, res) => {
   }
   
   // Verify email
-  const userIndex = users.findIndex(u => u.id === user.id);
-  users[userIndex].emailVerified = true;
-  users[userIndex].verificationToken = null;
-  users[userIndex].verificationExpires = null;
-  users[userIndex].updatedAt = new Date().toISOString();
-  
-  writeCollection('users', users);
+  await updateInCollection('users', user.id, {
+    emailVerified: true,
+    verificationToken: null,
+    verificationExpires: null,
+    updatedAt: new Date().toISOString()
+  });
   
   res.json({ message: 'Correo verificado exitosamente. Ya puedes iniciar sesión.' });
 });
@@ -326,7 +318,7 @@ app.post('/api/users/resend-verification', async (req, res) => {
     return res.status(400).json({ error: 'Correo electrónico requerido' });
   }
   
-  const users = readCollection('users');
+  const users = await readCollection('users');
   const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
   
   if (!user) {
@@ -341,11 +333,10 @@ app.post('/api/users/resend-verification', async (req, res) => {
   const verificationToken = generateVerificationToken();
   const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
   
-  const userIndex = users.findIndex(u => u.id === user.id);
-  users[userIndex].verificationToken = verificationToken;
-  users[userIndex].verificationExpires = verificationExpires.toISOString();
-  
-  writeCollection('users', users);
+  await updateInCollection('users', user.id, {
+    verificationToken,
+    verificationExpires: verificationExpires.toISOString()
+  });
   
   const emailSent = await sendVerificationEmail(email, verificationToken, user.name);
   
@@ -357,14 +348,14 @@ app.post('/api/users/resend-verification', async (req, res) => {
 });
 
 // User Login
-app.post('/api/users/login', (req, res) => {
+app.post('/api/users/login', async (req, res) => {
   const { email, password } = req.body;
   
   if (!email || !password) {
     return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
   }
   
-  const users = readCollection('users');
+  const users = await readCollection('users');
   const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
   
   if (!user) {
@@ -400,13 +391,13 @@ app.post('/api/users/login', (req, res) => {
 });
 
 // Get User Profile (protected)
-app.get('/api/users/profile', (req, res) => {
+app.get('/api/users/profile', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token requerido' });
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const users = readCollection('users');
+    const users = await readCollection('users');
     const user = users.find(u => u.id === decoded.id);
     
     if (!user) {
@@ -427,35 +418,35 @@ app.get('/api/users/profile', (req, res) => {
 });
 
 // Update User Profile (protected)
-app.put('/api/users/profile', (req, res) => {
+app.put('/api/users/profile', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token requerido' });
   
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const users = readCollection('users');
-    const userIndex = users.findIndex(u => u.id === decoded.id);
+    const users = await readCollection('users');
+    const user = users.find(u => u.id === decoded.id);
     
-    if (userIndex === -1) {
+    if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
     
     const { name, phone, nit } = req.body;
-    if (name) users[userIndex].name = name;
-    if (phone !== undefined) users[userIndex].phone = phone;
-    if (nit !== undefined) users[userIndex].nit = nit;
-    users[userIndex].updatedAt = new Date().toISOString();
+    const updates = { updatedAt: new Date().toISOString() };
+    if (name) updates.name = name;
+    if (phone !== undefined) updates.phone = phone;
+    if (nit !== undefined) updates.nit = nit;
     
-    writeCollection('users', users);
+    await updateInCollection('users', decoded.id, updates);
     
     res.json({ 
       message: 'Perfil actualizado',
       user: { 
-        id: users[userIndex].id, 
-        name: users[userIndex].name, 
-        email: users[userIndex].email, 
-        phone: users[userIndex].phone,
-        nit: users[userIndex].nit
+        id: user.id, 
+        name: name || user.name, 
+        email: user.email, 
+        phone: phone !== undefined ? phone : user.phone,
+        nit: nit !== undefined ? nit : user.nit
       } 
     });
   } catch (err) {
@@ -471,7 +462,7 @@ app.post('/api/users/forgot-password', async (req, res) => {
     return res.status(400).json({ error: 'Correo electrónico requerido' });
   }
   
-  const users = readCollection('users');
+  const users = await readCollection('users');
   const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
   
   if (!user) {
@@ -483,11 +474,10 @@ app.post('/api/users/forgot-password', async (req, res) => {
   const resetToken = generateVerificationToken();
   const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
   
-  const userIndex = users.findIndex(u => u.id === user.id);
-  users[userIndex].resetPasswordToken = resetToken;
-  users[userIndex].resetPasswordExpires = resetExpires.toISOString();
-  
-  writeCollection('users', users);
+  await updateInCollection('users', user.id, {
+    resetPasswordToken: resetToken,
+    resetPasswordExpires: resetExpires.toISOString()
+  });
   
   // Send reset email
   const resetUrl = `${FRONTEND_URL}/restablecer-password?token=${resetToken}`;
@@ -546,14 +536,14 @@ app.post('/api/users/forgot-password', async (req, res) => {
 });
 
 // Reset Password
-app.post('/api/users/reset-password', (req, res) => {
+app.post('/api/users/reset-password', async (req, res) => {
   const { token, newPassword } = req.body;
   
   if (!token || !newPassword) {
     return res.status(400).json({ error: 'Token y nueva contraseña son requeridos' });
   }
   
-  const users = readCollection('users');
+  const users = await readCollection('users');
   const user = users.find(u => u.resetPasswordToken === token);
   
   if (!user) {
@@ -564,22 +554,21 @@ app.post('/api/users/reset-password', (req, res) => {
     return res.status(400).json({ error: 'El token ha expirado' });
   }
   
-  const userIndex = users.findIndex(u => u.id === user.id);
-  users[userIndex].password = bcrypt.hashSync(newPassword, 10);
-  users[userIndex].resetPasswordToken = null;
-  users[userIndex].resetPasswordExpires = null;
-  users[userIndex].updatedAt = new Date().toISOString();
-  
-  writeCollection('users', users);
+  await updateInCollection('users', user.id, {
+    password: bcrypt.hashSync(newPassword, 10),
+    resetPasswordToken: null,
+    resetPasswordExpires: null,
+    updatedAt: new Date().toISOString()
+  });
   
   res.json({ message: 'Contraseña actualizada exitosamente' });
 });
 
 // ==================== PRODUCT ROUTES ====================
 
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
   const { category, search, limit = 100, offset = 0 } = req.query;
-  let products = readCollection('products');
+  let products = await readCollection('products');
   
   if (category && category !== 'all') {
     products = products.filter(p => p.category === category);
@@ -597,15 +586,14 @@ app.get('/api/products', (req, res) => {
   res.json(products.slice(Number(offset), Number(offset) + Number(limit)));
 });
 
-app.get('/api/products/:id', (req, res) => {
-  const products = readCollection('products');
+app.get('/api/products/:id', async (req, res) => {
+  const products = await readCollection('products');
   const product = products.find(p => p.id === req.params.id);
   if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
   res.json(product);
 });
 
-app.post('/api/products', authMiddleware, (req, res) => {
-  const products = readCollection('products');
+app.post('/api/products', authMiddleware, async (req, res) => {
   const id = req.body.id || `product-${Date.now()}`;
   const slug = req.body.slug || req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   
@@ -641,41 +629,39 @@ app.post('/api/products', authMiddleware, (req, res) => {
     updatedAt: new Date().toISOString()
   };
   
-  products.push(newProduct);
-  writeCollection('products', products);
+  await addToCollection('products', newProduct);
   res.status(201).json(newProduct);
 });
 
-app.put('/api/products/:id', authMiddleware, (req, res) => {
-  const products = readCollection('products');
+app.put('/api/products/:id', authMiddleware, async (req, res) => {
+  const products = await readCollection('products');
   const index = products.findIndex(p => p.id === req.params.id);
   if (index === -1) return res.status(404).json({ error: 'Producto no encontrado' });
   
-  products[index] = { ...products[index], ...req.body, id: req.params.id, updatedAt: new Date().toISOString() };
-  writeCollection('products', products);
-  res.json(products[index]);
+  const updates = { ...req.body, id: req.params.id, updatedAt: new Date().toISOString() };
+  await updateInCollection('products', req.params.id, updates);
+  res.json(updates);
 });
 
-app.delete('/api/products/:id', authMiddleware, (req, res) => {
-  let products = readCollection('products');
+app.delete('/api/products/:id', authMiddleware, async (req, res) => {
+  const products = await readCollection('products');
   const index = products.findIndex(p => p.id === req.params.id);
   if (index === -1) return res.status(404).json({ error: 'Producto no encontrado' });
   
-  products.splice(index, 1);
-  writeCollection('products', products);
+  await deleteFromCollection('products', req.params.id);
   res.json({ message: 'Producto eliminado' });
 });
 
 // ==================== ORDER ROUTES ====================
 
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   const items = req.body.items || [];
   if (items.length === 0) {
     return res.status(400).json({ error: 'El carrito no contiene productos' });
   }
 
   // Stock check
-  const products = readCollection('products');
+  const products = await readCollection('products');
   for (const item of items) {
     const prodId = item.product?.id || item.id;
     const prod = products.find(p => p.id === prodId);
@@ -684,7 +670,6 @@ app.post('/api/orders', (req, res) => {
     }
   }
 
-  const orders = readCollection('orders');
   const orderId = uuidv4();
   const orderNumber = `PR-${Date.now().toString().slice(-6)}`;
   
@@ -717,15 +702,14 @@ app.post('/api/orders', (req, res) => {
     updatedAt: new Date().toISOString()
   };
   
-  orders.push(newOrder);
-  writeCollection('orders', orders);
+  await addToCollection('orders', newOrder);
   
   res.status(201).json({ orderId, orderNumber, total: newOrder.total });
 });
 
-app.get('/api/orders', authMiddleware, (req, res) => {
+app.get('/api/orders', authMiddleware, async (req, res) => {
   const { status, limit = 100, offset = 0 } = req.query;
-  let orders = readCollection('orders');
+  let orders = await readCollection('orders');
   
   if (status && status !== 'all') {
     orders = orders.filter(o => o.orderStatus === status);
@@ -737,15 +721,15 @@ app.get('/api/orders', authMiddleware, (req, res) => {
   res.json(orders.slice(Number(offset), Number(offset) + Number(limit)));
 });
 
-app.get('/api/orders/:id', authMiddleware, (req, res) => {
-  const orders = readCollection('orders');
+app.get('/api/orders/:id', authMiddleware, async (req, res) => {
+  const orders = await readCollection('orders');
   const order = orders.find(o => o.id === req.params.id);
   if (!order) return res.status(404).json({ error: 'Pedido no encontrado' });
   res.json(order);
 });
 
-app.put('/api/orders/:id/status', authMiddleware, (req, res) => {
-  const orders = readCollection('orders');
+app.put('/api/orders/:id/status', authMiddleware, async (req, res) => {
+  const orders = await readCollection('orders');
   const index = orders.findIndex(o => o.id === req.params.id);
   if (index === -1) return res.status(404).json({ error: 'Pedido no encontrado' });
   
@@ -753,38 +737,40 @@ app.put('/api/orders/:id/status', authMiddleware, (req, res) => {
   const validStatuses = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'];
   if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Estado invalido' });
   
-  orders[index].orderStatus = status;
-  orders[index].updatedAt = new Date().toISOString();
+  const updates = {
+    orderStatus: status,
+    updatedAt: new Date().toISOString()
+  };
   
   // If paid, update payment and decrement stock
   if (status === 'paid') {
-    orders[index].paymentStatus = 'completed';
+    updates.paymentStatus = 'completed';
     
     // Decrement stock
-    const products = readCollection('products');
+    const products = await readCollection('products');
     for (const item of orders[index].items) {
-      const pIndex = products.findIndex(p => p.id === item.product.id);
-      if (pIndex !== -1) {
-        products[pIndex].stockCount = Math.max(0, products[pIndex].stockCount - item.quantity);
+      const product = products.find(p => p.id === item.product.id);
+      if (product) {
+        await updateInCollection('products', item.product.id, {
+          stockCount: Math.max(0, product.stockCount - item.quantity)
+        });
       }
     }
-    writeCollection('products', products);
   }
   
-  writeCollection('orders', orders);
+  await updateInCollection('orders', req.params.id, updates);
   res.json({ message: 'Estado actualizado' });
 });
 
 // ==================== PAYMENT ROUTES ====================
 
-app.post('/api/payments/process', (req, res) => {
+app.post('/api/payments/process', async (req, res) => {
   const { orderId, paymentMethod, cardData, tigoPhone } = req.body;
-  const orders = readCollection('orders');
+  const orders = await readCollection('orders');
   const orderIndex = orders.findIndex(o => o.id === orderId);
   
   if (orderIndex === -1) return res.status(404).json({ error: 'Pedido no encontrado' });
   
-  const payments = readCollection('payments');
   const paymentId = uuidv4();
   
   let paymentResult = {};
@@ -845,29 +831,31 @@ app.post('/api/payments/process', (req, res) => {
     updatedAt: new Date().toISOString()
   };
   
-  payments.push(payment);
-  writeCollection('payments', payments);
+  await addToCollection('payments', payment);
   
   // Update order
-  orders[orderIndex].paymentStatus = paymentResult.status;
-  orders[orderIndex].paymentReference = paymentResult.paymentReference || paymentResult.culqiChargeId || '';
-  orders[orderIndex].updatedAt = new Date().toISOString();
+  const orderUpdates = {
+    paymentStatus: paymentResult.status,
+    paymentReference: paymentResult.paymentReference || paymentResult.culqiChargeId || '',
+    updatedAt: new Date().toISOString()
+  };
   
   if (paymentResult.status === 'completed') {
-    orders[orderIndex].orderStatus = 'paid';
+    orderUpdates.orderStatus = 'paid';
     
     // Decrement stock
-    const products = readCollection('products');
+    const products = await readCollection('products');
     for (const item of orders[orderIndex].items) {
-      const pIndex = products.findIndex(p => p.id === item.product.id);
-      if (pIndex !== -1) {
-        products[pIndex].stockCount = Math.max(0, products[pIndex].stockCount - item.quantity);
+      const product = products.find(p => p.id === item.product.id);
+      if (product) {
+        await updateInCollection('products', item.product.id, {
+          stockCount: Math.max(0, product.stockCount - item.quantity)
+        });
       }
     }
-    writeCollection('products', products);
   }
   
-  writeCollection('orders', orders);
+  await updateInCollection('orders', orderId, orderUpdates);
   
   res.json({
     success: true,
@@ -879,9 +867,9 @@ app.post('/api/payments/process', (req, res) => {
 
 // ==================== STATS ROUTES ====================
 
-app.get('/api/stats/dashboard', authMiddleware, (req, res) => {
-  const products = readCollection('products');
-  const orders = readCollection('orders');
+app.get('/api/stats/dashboard', authMiddleware, async (req, res) => {
+  const products = await readCollection('products');
+  const orders = await readCollection('orders');
   
   const totalProducts = products.length;
   const totalOrders = orders.length;
@@ -947,9 +935,9 @@ app.get('/api/stats/dashboard', authMiddleware, (req, res) => {
 
 // ==================== SYNC ROUTES ====================
 
-app.post('/api/sync/products', (req, res) => {
+app.post('/api/sync/products', async (req, res) => {
   const { products } = req.body;
-  const existing = readCollection('products');
+  const existing = await readCollection('products');
   
   // Only allow sync if DB is empty or request has valid admin token
   if (existing.length > 0) {
@@ -974,7 +962,7 @@ app.post('/api/sync/products', (req, res) => {
     }
   }
   
-  writeCollection('products', existing);
+  await writeCollection('products', existing);
   res.json({ message: `${products.length} productos sincronizados` });
 });
 
