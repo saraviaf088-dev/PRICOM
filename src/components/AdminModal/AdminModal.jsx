@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
 import { 
   LayoutDashboard, Plus, Trash2, Edit3, Save, X, DollarSign, Package, 
