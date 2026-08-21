@@ -176,36 +176,116 @@ export default function CheckoutPage() {
   };
 
   if (orderConfirmed) {
+    const receiptDate = new Date().toLocaleString('es-BO', { dateStyle: 'long', timeStyle: 'short' });
     return (
       <>
         <Header />
-        <main style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6rem 1.5rem 4rem' }}>
-          <div style={{ maxWidth: '500px', textAlign: 'center' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--color-success)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-              <CheckCircle2 size={40} color="#fff" />
+        <main style={{ minHeight: '70vh', display: 'flex', justifyContent: 'center', padding: '6rem 1.5rem 4rem' }}>
+          <div style={{ maxWidth: '560px', width: '100%' }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'var(--color-success)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                <CheckCircle2 size={36} color="#fff" />
+              </div>
+              <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>¡Compra Realizada!</h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Tu pedido fue registrado exitosamente</p>
             </div>
-            <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>¡Pedido Confirmado!</h1>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Tu pedido <strong>{orderConfirmed.orderNumber}</strong> fue registrado exitosamente.</p>
-            <div style={{ backgroundColor: 'var(--bg-surface)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', textAlign: 'left' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Estado:</span>
-                <span style={{ fontWeight: '600', color: 'var(--color-warning)' }}>Pendiente de pago</span>
+
+            <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+              <div style={{ background: 'linear-gradient(135deg, var(--color-azul-oscuro), var(--color-celeste))', padding: '1.25rem 1.5rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>COMPROBANTE DE COMPRA</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: '700' }}>{orderConfirmed.orderNumber}</div>
+                </div>
+                <div style={{ textAlign: 'right', fontSize: '0.78rem', opacity: 0.9 }}>
+                  <div>{receiptDate}</div>
+                  <div>Estado: Pendiente de pago</div>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Total:</span>
-                <span style={{ fontWeight: '700', fontSize: '1.1rem' }}>Bs. {total.toLocaleString('es-BO')}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Método de pago:</span>
-                <span style={{ fontWeight: '600' }}>{selectedPaymentLabel}</span>
+
+              <div style={{ padding: '1.25rem 1.5rem' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-celeste)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Datos del Cliente</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                  <div><span style={{ color: 'var(--text-secondary)' }}>Nombre:</span> <strong>{orderConfirmed.customerName || formData.name}</strong></div>
+                  <div><span style={{ color: 'var(--text-secondary)' }}>Teléfono:</span> <strong>{orderConfirmed.customerPhone || formData.phone}</strong></div>
+                  {formData.email && <div><span style={{ color: 'var(--text-secondary)' }}>Email:</span> <strong>{formData.email}</strong></div>}
+                  {formData.nit && <div><span style={{ color: 'var(--text-secondary)' }}>NIT/CI:</span> <strong>{formData.nit}</strong></div>}
+                  <div style={{ gridColumn: '1 / -1' }}><span style={{ color: 'var(--text-secondary)' }}>Dirección:</span> <strong>{orderConfirmed.address || formData.address}, {formData.city}{formData.zone ? `, ${formData.zone}` : ''}</strong></div>
+                </div>
+
+                <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-celeste)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Productos</div>
+                  {(orderConfirmed.items || cart).map((item, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0', fontSize: '0.85rem', borderBottom: i < (orderConfirmed.items || cart).length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                      <span style={{ flex: 1 }}>{item.productName || item.name} <span style={{ color: 'var(--text-secondary)' }}>x{item.quantity}</span></span>
+                      <span style={{ fontWeight: '600' }}>Bs. {((item.price || 0) * item.quantity).toLocaleString('es-BO')}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Subtotal</span>
+                    <span>Bs. {subtotal.toLocaleString('es-BO')}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Envío ({formData.deliveryType === 'showroom' ? 'Showroom' : formData.city})</span>
+                    <span style={{ color: deliveryCost === 0 ? 'var(--color-success)' : 'inherit' }}>{deliveryCost === 0 ? 'Gratis' : `Bs. ${deliveryCost}`}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '2px solid var(--border-color)', fontSize: '1.1rem', fontWeight: '800' }}>
+                    <span>Total a Pagar</span>
+                    <span style={{ color: 'var(--color-azul-oscuro)' }}>Bs. {total.toLocaleString('es-BO')}</span>
+                  </div>
+                </div>
+
+                {(formData.paymentMethod === 'card' || formData.paymentMethod === 'transfer') && (
+                  <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-celeste)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Datos de Pago</div>
+                    <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', padding: '0.85rem', fontSize: '0.83rem', lineHeight: 1.6 }}>
+                      <div><strong>Banco:</strong> Banco Nacional de Bolivia (BNB)</div>
+                      <div><strong>Cuenta:</strong> 1000242043</div>
+                      <div><strong>Swift:</strong> BNBOBOLXXXX</div>
+                      <div><strong>Titular:</strong> PRICOM Bolivia S.R.L.</div>
+                      <div style={{ marginTop: '0.5rem', color: 'var(--color-warning)', fontWeight: '600' }}>Realiza la transferencia del monto exacto y envía el comprobante por WhatsApp.</div>
+                    </div>
+                  </div>
+                )}
+
+                {formData.paymentMethod === 'qr' && (
+                  <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-celeste)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Pago QR / SINPE</div>
+                    <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', padding: '0.85rem', fontSize: '0.83rem', color: 'var(--color-warning)', fontWeight: '600' }}>
+                      Envía el comprobante de pago por WhatsApp para confirmar tu pedido.
+                    </div>
+                  </div>
+                )}
+
+                {formData.notes && (
+                  <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--color-celeste)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>Notas</div>
+                    <div style={{ fontSize: '0.83rem', color: 'var(--text-secondary)' }}>{formData.notes}</div>
+                  </div>
+                )}
+
+                <div style={{ backgroundColor: 'rgba(0,180,216,0.08)', borderRadius: 'var(--radius-md)', padding: '0.85rem', fontSize: '0.8rem', textAlign: 'center', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Recibirás un mensaje de WhatsApp con los detalles para coordinar el pago y la entrega.
+                </div>
               </div>
             </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-              Recibirás un mensaje de WhatsApp con los detalles para coordinar el pago y la entrega.
-            </p>
-            <button className="btn btn-primary" onClick={() => navigate('/')} style={{ width: '100%' }}>
-              Volver al Inicio
-            </button>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <a
+                href={`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=Hola, confirmo mi pedido ${orderConfirmed.orderNumber}. Adjunto comprobante de pago.`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.85rem', backgroundColor: '#25D366', color: '#fff', borderRadius: 'var(--radius-md)', textDecoration: 'none', fontWeight: '600', fontSize: '0.9rem' }}
+              >
+                <MessageCircle size={18} />
+                Enviar comprobante por WhatsApp
+              </a>
+              <button className="btn btn-primary" onClick={() => navigate('/')} style={{ width: '100%' }}>
+                Volver al Inicio
+              </button>
+            </div>
           </div>
         </main>
         <Footer />
