@@ -88,6 +88,10 @@ export default function CheckoutPage() {
       showToast('Campos requeridos', 'Por favor completa nombre, teléfono y dirección.', 'warning');
       return;
     }
+    if (formData.paymentMethod === 'card') {
+      setShowCardModal(true);
+      return;
+    }
     setIsProcessing(true);
     try {
       const orderData = {
