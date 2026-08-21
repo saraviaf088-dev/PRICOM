@@ -8,7 +8,7 @@ import Footer from '../components/Footer/Footer';
 import {
   Check, ShieldCheck, Truck, CreditCard, Smartphone, Building,
   MessageCircle, CheckCircle2, User, Phone, Mail, MapPin, Lock,
-  Package, ChevronDown, ChevronUp, AlertCircle
+  Package, ChevronDown, ChevronUp, AlertCircle, FileText
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
