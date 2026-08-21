@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { CONFIG } from '../config';
@@ -7,7 +7,8 @@ import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import {
   Check, ArrowRight, ArrowLeft, ShieldCheck, Truck,
-  CreditCard, Smartphone, Building, MessageCircle, CheckCircle2
+  CreditCard, Smartphone, Building, MessageCircle, CheckCircle2,
+  User, Phone, Mail, MapPin, FileText, Store, Calendar
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -19,6 +20,10 @@ export default function CheckoutPage() {
     user, showToast,
     createOrder, processPayment
   } = useApp();
+
+  useEffect(() => {
+    setCheckoutStep(1);
+  }, [setCheckoutStep]);
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -59,8 +64,12 @@ export default function CheckoutPage() {
   };
 
   const subtotal = cartTotal;
-  const deliveryCost = formData.deliveryType === 'home' ? 0 : 0;
+  const departmentData = BOLIVIA_DEPARTMENTS.find(d => d.name === formData.department);
+  const deliveryCost = formData.deliveryType === 'home' ? (departmentData?.shippingFee || 0) : 0;
   const total = subtotal + deliveryCost;
+
+  const selectedShowroomData = SHOWROOMS.find(s => s.id === formData.selectedShowroom);
+  const selectedPaymentLabel = { qr: 'QR/SINPE', transfer: 'Transferencia Bancaria', card: 'Tarjeta Crédito/Débito' }[formData.paymentMethod] || formData.paymentMethod;
 
   const handleNextStep = () => {
     if (checkoutStep === 1) {
@@ -117,6 +126,13 @@ export default function CheckoutPage() {
       };
 
       const order = await createOrder(orderData);
+
+      if (!order) {
+        showToast('Error', 'No se pudo crear el pedido. Intenta de nuevo.', 'error');
+        setIsProcessing(false);
+        return;
+      }
+
       setOrderConfirmed(order);
       setCheckoutStep(5);
       confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
@@ -135,17 +151,15 @@ export default function CheckoutPage() {
       const paymentResult = await processPayment({
         orderId: orderConfirmed.orderId || orderConfirmed.id,
         paymentMethod: formData.paymentMethod,
-        cardData: formData.paymentMethod === 'card' ? { number: '4242424242424242', installments: 1 } : null,
-        tigoPhone: formData.paymentMethod === 'tigo' ? formData.phone : null,
+        cardData: formData.paymentMethod === 'card' ? { number: '', installments: 1 } : null,
       });
       clearCart();
       if (paymentResult && paymentResult.success !== false) {
         showToast('Pago Registrado', 'Tu pago ha sido procesado correctamente.', 'success');
-        navigate('/');
       } else {
         showToast('Pago Registrado', 'Tu pedido fue registrado. Puedes realizar el pago posteriormente.', 'success');
-        navigate('/');
       }
+      navigate('/');
     } catch (err) {
       showToast('Error de Pago', 'Hubo un problema al procesar el pago.', 'error');
     } finally {
@@ -153,19 +167,26 @@ export default function CheckoutPage() {
     }
   };
 
+  const stepLabels = ['Datos', 'Envío', 'Pago', 'Confirmar'];
+
   return (
     <>
       <Header />
-      <main style={{ paddingTop: '6rem', minHeight: '80vh', padding: '6rem 1.5rem 4rem', maxWidth: '800px', margin: '0 auto' }}>
-        <div className="checkout-steps" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-          {['Datos', 'Envío', 'Pago', 'Confirmar'].map((step, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: checkoutStep > i + 1 ? 'var(--color-celeste)' : 'var(--text-secondary)' }}>
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: checkoutStep > i + 1 ? 'var(--color-celeste)' : 'var(--bg-surface)', color: checkoutStep > i + 1 ? '#fff' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
-                {checkoutStep > i + 1 ? <Check size={12} /> : i + 1}
+      <main style={{ minHeight: '80vh', padding: '6rem 1.5rem 4rem', maxWidth: '800px', margin: '0 auto' }}>
+        <div className="checkout-stepper">
+          {stepLabels.map((step, i) => {
+            const stepNum = i + 1;
+            const isCompleted = checkoutStep > stepNum;
+            const isActive = checkoutStep === stepNum;
+            return (
+              <div key={i} className={`checkout-step-item${isCompleted ? ' completed' : ''}${isActive ? ' active' : ''}`}>
+                <div className="checkout-step-number">
+                  {isCompleted ? <Check size={14} /> : stepNum}
+                </div>
+                <span>{step}</span>
               </div>
-              <span className="checkout-step-text" style={{ display: 'none' }}>{step}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {checkoutStep < 5 && (
@@ -226,7 +247,7 @@ export default function CheckoutPage() {
               <label style={{ padding: '1rem', border: `2px solid ${formData.deliveryType === 'home' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
                 <input type="radio" name="deliveryType" value="home" checked={formData.deliveryType === 'home'} onChange={handleInputChange} style={{ marginRight: '0.5rem' }} />
                 <Truck size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                Envío a Domicilio (Gratis)
+                Envío a Domicilio {deliveryCost > 0 ? `(Bs. ${deliveryCost})` : '(Gratis)'}
               </label>
               <label style={{ padding: '1rem', border: `2px solid ${formData.deliveryType === 'showroom' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
                 <input type="radio" name="deliveryType" value="showroom" checked={formData.deliveryType === 'showroom'} onChange={handleInputChange} style={{ marginRight: '0.5rem' }} />
@@ -264,6 +285,60 @@ export default function CheckoutPage() {
                 <Smartphone size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
                 Tarjeta Crédito/Débito
               </label>
+            </div>
+          </div>
+        )}
+
+        {checkoutStep === 4 && (
+          <div style={{ padding: '1.5rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Resumen del Pedido</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                <User size={16} color="var(--color-celeste)" />
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Cliente</div>
+                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.name}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                <Phone size={16} color="var(--color-celeste)" />
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Teléfono</div>
+                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.phone}</div>
+                </div>
+              </div>
+              {formData.email && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                  <Mail size={16} color="var(--color-celeste)" />
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Email</div>
+                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.email}</div>
+                  </div>
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                <MapPin size={16} color="var(--color-celeste)" />
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Dirección</div>
+                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.address}, {formData.zone}, {formData.city}</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                <Truck size={16} color="var(--color-celeste)" />
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Entrega</div>
+                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>
+                    {formData.deliveryType === 'home' ? 'Envío a Domicilio' : `Recoger en ${selectedShowroomData?.name || formData.selectedShowroom}`}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                <FileText size={16} color="var(--color-celeste)" />
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Método de Pago</div>
+                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{selectedPaymentLabel}</div>
+                </div>
+              </div>
             </div>
           </div>
         )}
