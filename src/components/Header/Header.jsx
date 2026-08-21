@@ -294,16 +294,6 @@ export default function Header() {
               {comparator.length > 0 && <span className="action-counter">{comparator.length}</span>}
             </button>
 
-            {/* User Account */}
-            <button 
-              className="action-btn" 
-              onClick={() => setActiveModal('auth')}
-              title="Mi Cuenta"
-            >
-              <User size={20} />
-              <span>Cuenta</span>
-            </button>
-
             {/* Cart */}
             <button 
               className="action-btn" 
@@ -404,7 +394,6 @@ export default function Header() {
 
           <div className="mobile-drawer-divider" />
 
-          <div className="mobile-drawer-section-title">Mi Cuenta</div>
           <button
             className="mobile-drawer-nav-item"
             onClick={() => { setActiveModal('wishlist'); setIsMobileMenuOpen(false); }}
@@ -431,15 +420,6 @@ export default function Header() {
                 {comparator.length}
               </span>
             )}
-          </button>
-
-          <button
-            className="mobile-drawer-nav-item"
-            onClick={() => { setActiveModal('auth'); setIsMobileMenuOpen(false); }}
-            style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left' }}
-          >
-            <User size={18} />
-            <span>Mi Cuenta</span>
           </button>
 
           <div className="mobile-drawer-divider" />
