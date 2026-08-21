@@ -317,7 +317,7 @@ export default function AdminModal({ fullPage = false }) {
         </p>
         <div className="form-group">
           <label className="form-label">Usuario</label>
-          <input type="text" className="form-input" value={loginForm.username} onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))} placeholder="Ej: admin" required autoFocus />
+          <input type="text" className="form-input" value={loginForm.username} onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))} placeholder="Ingresa tu usuario" required autoFocus />
         </div>
         <div className="form-group">
           <label className="form-label">Contraseña</label>
@@ -332,9 +332,6 @@ export default function AdminModal({ fullPage = false }) {
           <Lock size={16} />
           <span>Iniciar Sesión</span>
         </button>
-        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          Credenciales por defecto: admin / PricomOficial2026!
-        </p>
       </form>
     );
 
