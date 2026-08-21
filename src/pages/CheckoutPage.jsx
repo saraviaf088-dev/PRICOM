@@ -6,9 +6,9 @@ import { BOLIVIA_DEPARTMENTS, SHOWROOMS, ZONES_BY_CITY } from '../data/showrooms
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import {
-  Check, ArrowRight, ArrowLeft, ShieldCheck, Truck,
-  CreditCard, Smartphone, Building, MessageCircle, CheckCircle2,
-  User, Phone, Mail, MapPin, FileText, Store, Calendar
+  Check, ShieldCheck, Truck, CreditCard, Smartphone, Building,
+  MessageCircle, CheckCircle2, User, Phone, Mail, MapPin, Lock,
+  Package, ChevronDown, ChevronUp, AlertCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -30,11 +30,10 @@ export default function CheckoutPage() {
     email: user?.email || '',
     phone: user?.phone || '',
     nit: user?.nit || '',
-    department: 'Santa Cruz',
     city: 'Santa Cruz de la Sierra',
-    zone: 'Equipetrol Norte',
+    zone: '',
     address: user?.address || '',
-    reference: 'Frente al parque',
+    reference: '',
     deliveryType: 'home',
     selectedShowroom: 'scz-equipetrol',
     paymentMethod: 'qr',
@@ -43,15 +42,17 @@ export default function CheckoutPage() {
 
   const [orderConfirmed, setOrderConfirmed] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [expandedSummary, setExpandedSummary] = useState(true);
 
   if (cart.length === 0 && !orderConfirmed) {
     return (
       <>
         <Header />
         <div style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 1.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Tu carrito está vacío</h2>
+          <Package size={64} style={{ marginBottom: '1.5rem', opacity: 0.3 }} />
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Tu carrito está vacío</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Agrega productos antes de continuar con la compra.</p>
-          <button className="btn btn-primary" onClick={() => navigate('/')}>Volver al Inicio</button>
+          <button className="btn btn-primary" onClick={() => navigate('/')}>Ver Productos</button>
         </div>
         <Footer />
       </>
@@ -62,42 +63,24 @@ export default function CheckoutPage() {
     const { name, value } = e.target;
     setFormData(prev => {
       const updated = { ...prev, [name]: value };
-      if (name === 'city') {
-        updated.zone = '';
-      }
+      if (name === 'city') updated.zone = '';
       return updated;
     });
   };
 
   const subtotal = cartTotal;
-  const departmentData = BOLIVIA_DEPARTMENTS.find(d => d.name === formData.department);
+  const departmentData = BOLIVIA_DEPARTMENTS.find(d => formData.city.includes(d.cities[0]?.split(' ')[0]) || d.cities.includes(formData.city));
   const deliveryCost = formData.deliveryType === 'home' ? (departmentData?.shippingFee || 0) : 0;
   const total = subtotal + deliveryCost;
 
   const selectedShowroomData = SHOWROOMS.find(s => s.id === formData.selectedShowroom);
   const selectedPaymentLabel = { qr: 'QR/SINPE', transfer: 'Transferencia Bancaria', card: 'Tarjeta Crédito/Débito' }[formData.paymentMethod] || formData.paymentMethod;
 
-  const handleNextStep = () => {
-    if (checkoutStep === 1) {
-      if (!formData.name || !formData.phone || !formData.address) {
-        showToast('Campos requeridos', 'Por favor completa nombre, teléfono y dirección.', 'warning');
-        return;
-      }
-      setCheckoutStep(2);
-    } else if (checkoutStep === 2) {
-      setCheckoutStep(3);
-    } else if (checkoutStep === 3) {
-      setCheckoutStep(4);
-    }
-  };
-
-  const handlePrevStep = () => {
-    if (checkoutStep > 1) {
-      setCheckoutStep(checkoutStep - 1);
-    }
-  };
-
   const handleConfirmOrder = async () => {
+    if (!formData.name || !formData.phone || !formData.address) {
+      showToast('Campos requeridos', 'Por favor completa nombre, teléfono y dirección.', 'warning');
+      return;
+    }
     setIsProcessing(true);
     try {
       const orderData = {
@@ -105,333 +88,355 @@ export default function CheckoutPage() {
         customerEmail: formData.email,
         customerPhone: formData.phone,
         customerNIT: formData.nit,
-        deliveryType: formData.deliveryType,
-        department: formData.department,
         city: formData.city,
         zone: formData.zone,
         address: formData.address,
         reference: formData.reference,
-        selectedShowroom: formData.selectedShowroom,
+        deliveryType: formData.deliveryType,
+        selectedShowroom: formData.deliveryType === 'showroom' ? selectedShowroomData?.name : null,
         paymentMethod: formData.paymentMethod,
-        subtotal,
-        shippingCost: deliveryCost,
-        total,
         items: cart.map(item => ({
-          product: {
-            id: item.product?.id || item.id,
-            name: item.product?.name || item.name,
-            brand: item.product?.brand || item.brand,
-            price: item.product?.price || item.price,
-            images: item.product?.images || item.images,
-            category: item.product?.category || item.category,
-          },
+          productId: item.product?.id || item.id,
+          productName: item.product?.name || item.name,
+          price: item.product?.price || item.price,
           quantity: item.quantity,
-          selectedColor: item.selectedColor,
-          selectedMaterial: item.selectedMaterial,
+          image: item.product?.images?.[0] || item.images?.[0],
         })),
+        subtotal,
+        deliveryCost,
+        total,
+        notes: formData.notes,
       };
 
-      const order = await createOrder(orderData);
-
-      if (!order) {
-        showToast('Error', 'No se pudo crear el pedido. Intenta de nuevo.', 'error');
-        setIsProcessing(false);
-        return;
+      const result = await createOrder(orderData);
+      if (result) {
+        setOrderConfirmed(result);
+        clearCart();
+        confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+        showToast('¡Pedido Confirmado!', `Tu pedido ${result.orderNumber} fue registrado exitosamente.`, 'success');
       }
-
-      setOrderConfirmed(order);
-      setCheckoutStep(5);
-      confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-      showToast('Pedido Confirmado', 'Tu pedido ha sido registrado exitosamente.', 'success');
     } catch (err) {
-      showToast('Error', 'Hubo un problema al procesar tu pedido.', 'error');
+      showToast('Error', 'No se pudo procesar el pedido. Intenta de nuevo.', 'warning');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handlePayment = async () => {
-    if (!orderConfirmed) return;
-    setIsProcessing(true);
-    try {
-      const paymentResult = await processPayment({
-        orderId: orderConfirmed.orderId || orderConfirmed.id,
-        paymentMethod: formData.paymentMethod,
-        cardData: formData.paymentMethod === 'card' ? { number: '', installments: 1 } : null,
-      });
-      clearCart();
-      if (paymentResult && paymentResult.success !== false) {
-        showToast('Pago Registrado', 'Tu pago ha sido procesado correctamente.', 'success');
-      } else {
-        showToast('Pago Registrado', 'Tu pedido fue registrado. Puedes realizar el pago posteriormente.', 'success');
-      }
-      navigate('/');
-    } catch (err) {
-      showToast('Error de Pago', 'Hubo un problema al procesar el pago.', 'error');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const stepLabels = ['Datos', 'Envío', 'Pago', 'Confirmar'];
+  if (orderConfirmed) {
+    return (
+      <>
+        <Header />
+        <main style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6rem 1.5rem 4rem' }}>
+          <div style={{ maxWidth: '500px', textAlign: 'center' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--color-success)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <CheckCircle2 size={40} color="#fff" />
+            </div>
+            <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>¡Pedido Confirmado!</h1>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Tu pedido <strong>{orderConfirmed.orderNumber}</strong> fue registrado exitosamente.</p>
+            <div style={{ backgroundColor: 'var(--bg-surface)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Estado:</span>
+                <span style={{ fontWeight: '600', color: 'var(--color-warning)' }}>Pendiente de pago</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Total:</span>
+                <span style={{ fontWeight: '700', fontSize: '1.1rem' }}>Bs. {total.toLocaleString('es-BO')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Método de pago:</span>
+                <span style={{ fontWeight: '600' }}>{selectedPaymentLabel}</span>
+              </div>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+              Recibirás un mensaje de WhatsApp con los detalles para coordinar el pago y la entrega.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate('/')} style={{ width: '100%' }}>
+              Volver al Inicio
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
-      <main style={{ minHeight: '80vh', padding: '6rem 1.5rem 4rem', maxWidth: '800px', margin: '0 auto' }}>
-        <div className="checkout-stepper">
-          {stepLabels.map((step, i) => {
-            const stepNum = i + 1;
-            const isCompleted = checkoutStep > stepNum;
-            const isActive = checkoutStep === stepNum;
-            return (
-              <div key={i} className={`checkout-step-item${isCompleted ? ' completed' : ''}${isActive ? ' active' : ''}`}>
-                <div className="checkout-step-number">
-                  {isCompleted ? <Check size={14} /> : stepNum}
-                </div>
-                <span>{step}</span>
-              </div>
-            );
-          })}
+      <main style={{ minHeight: '80vh', padding: '6rem 1.5rem 4rem', maxWidth: '1100px', margin: '0 auto' }}>
+        {/* Progress Bar */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+            <span>Datos</span>
+            <span>Entrega</span>
+            <span>Pago</span>
+          </div>
+          <div style={{ height: '4px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: '100%', background: 'linear-gradient(90deg, var(--color-celeste), var(--color-azul-oscuro))', borderRadius: '2px' }} />
+          </div>
         </div>
 
-        {checkoutStep < 5 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-            {cart.map(item => (
-              <div key={item.product?.id || item.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)' }}>
-                <img src={item.product?.images[0] || item.images[0]} alt={item.product?.name || item.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>{item.product?.name || item.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Cantidad: {item.quantity}</div>
-                </div>
-                <div style={{ fontWeight: '600' }}>Bs. {((item.product?.price || item.price) * item.quantity).toLocaleString('es-BO')}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {checkoutStep === 1 && (
-          <div style={{ padding: '1.5rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Datos de Contacto y Dirección</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-              <div>
-                <label className="form-label">Nombre completo *</label>
-                <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-input" required />
-              </div>
-              <div>
-                <label className="form-label">Teléfono *</label>
-                <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="form-input" required />
-              </div>
-              <div>
-                <label className="form-label">Email</label>
-                <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="form-input" />
-              </div>
-              <div>
-                <label className="form-label">NIT / CI</label>
-                <input type="text" name="nit" value={formData.nit} onChange={handleInputChange} className="form-input" />
-              </div>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">Dirección completa *</label>
-                <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="form-input" placeholder="Av. Principal #123, Zona Equipetrol" required />
-              </div>
-              <div>
-                <label className="form-label">Ciudad *</label>
-                <select name="city" value={formData.city} onChange={handleInputChange} className="form-input" required>
-                  {BOLIVIA_DEPARTMENTS.map(dept => (
-                    <optgroup key={dept.id} label={dept.name}>
-                      {dept.cities.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="form-label">Barrio / Zona</label>
-                <select name="zone" value={formData.zone} onChange={handleInputChange} className="form-input">
-                  <option value="">Selecciona una zona</option>
-                  {(ZONES_BY_CITY[formData.city] || []).map(z => (
-                    <option key={z} value={z}>{z}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="form-label">Referencia</label>
-                <input type="text" name="reference" value={formData.reference} onChange={handleInputChange} className="form-input" placeholder="Frente al parque" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {checkoutStep === 2 && (
-          <div style={{ padding: '1.5rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Tipo de Entrega</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-              <label style={{ padding: '1rem', border: `2px solid ${formData.deliveryType === 'home' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
-                <input type="radio" name="deliveryType" value="home" checked={formData.deliveryType === 'home'} onChange={handleInputChange} style={{ marginRight: '0.5rem' }} />
-                <Truck size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                Envío a Domicilio {deliveryCost > 0 ? `(Bs. ${deliveryCost})` : '(Gratis)'}
-              </label>
-              <label style={{ padding: '1rem', border: `2px solid ${formData.deliveryType === 'showroom' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
-                <input type="radio" name="deliveryType" value="showroom" checked={formData.deliveryType === 'showroom'} onChange={handleInputChange} style={{ marginRight: '0.5rem' }} />
-                <Building size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                Recoger en Showroom
-              </label>
-            </div>
-            {formData.deliveryType === 'showroom' && (
-              <div style={{ marginTop: '1rem' }}>
-                <label className="form-label">Selecciona Showroom</label>
-                <select name="selectedShowroom" value={formData.selectedShowroom} onChange={handleInputChange} className="form-input">
-                  {SHOWROOMS.map(s => <option key={s.id} value={s.id}>{s.name} - {s.city}</option>)}
-                </select>
-              </div>
-            )}
-          </div>
-        )}
-
-        {checkoutStep === 3 && (
-          <div style={{ padding: '1.5rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Método de Pago</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-              <label style={{ padding: '1rem', border: `2px solid ${formData.paymentMethod === 'qr' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
-                <input type="radio" name="paymentMethod" value="qr" checked={formData.paymentMethod === 'qr'} onChange={handleInputChange} style={{ marginRight: '0.5rem' }} />
-                <CheckCircle2 size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                QR/SINPE
-              </label>
-              <label style={{ padding: '1rem', border: `2px solid ${formData.paymentMethod === 'transfer' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
-                <input type="radio" name="paymentMethod" value="transfer" checked={formData.paymentMethod === 'transfer'} onChange={handleInputChange} style={{ marginRight: '0.5rem' }} />
-                <CreditCard size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                Transferencia Bancaria
-              </label>
-              <label style={{ padding: '1rem', border: `2px solid ${formData.paymentMethod === 'card' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
-                <input type="radio" name="paymentMethod" value="card" checked={formData.paymentMethod === 'card'} onChange={handleInputChange} style={{ marginRight: '0.5rem' }} />
-                <Smartphone size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                Tarjeta Crédito/Débito
-              </label>
-            </div>
-          </div>
-        )}
-
-        {checkoutStep === 4 && (
-          <div style={{ padding: '1.5rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Resumen del Pedido</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
-                <User size={16} color="var(--color-celeste)" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
+          {/* Left Column - Forms */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Contact & Address */}
+            <section style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <User size={18} color="var(--color-celeste)" />
+                Datos de Contacto y Dirección
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Cliente</div>
-                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.name}</div>
+                  <label className="form-label">Nombre completo *</label>
+                  <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-input" placeholder="Tu nombre" required />
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
-                <Phone size={16} color="var(--color-celeste)" />
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Teléfono</div>
-                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.phone}</div>
+                  <label className="form-label">Teléfono *</label>
+                  <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="form-input" placeholder="76543210" required />
+                </div>
+                <div>
+                  <label className="form-label">Email</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="form-input" placeholder="tu@email.com" />
+                </div>
+                <div>
+                  <label className="form-label">NIT / CI</label>
+                  <input type="text" name="nit" value={formData.nit} onChange={handleInputChange} className="form-input" placeholder="Opcional para factura" />
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Dirección completa *</label>
+                  <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="form-input" placeholder="Av. Principal #123" required />
+                </div>
+                <div>
+                  <label className="form-label">Ciudad *</label>
+                  <select name="city" value={formData.city} onChange={handleInputChange} className="form-input" required>
+                    {BOLIVIA_DEPARTMENTS.map(dept => (
+                      <optgroup key={dept.id} label={dept.name}>
+                        {dept.cities.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label">Barrio / Zona</label>
+                  <select name="zone" value={formData.zone} onChange={handleInputChange} className="form-input">
+                    <option value="">Selecciona una zona</option>
+                    {(ZONES_BY_CITY[formData.city] || []).map(z => (
+                      <option key={z} value={z}>{z}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Referencia</label>
+                  <input type="text" name="reference" value={formData.reference} onChange={handleInputChange} className="form-input" placeholder="Frente al parque, casa azul" />
                 </div>
               </div>
-              {formData.email && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
-                  <Mail size={16} color="var(--color-celeste)" />
+            </section>
+
+            {/* Delivery Type */}
+            <section style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Truck size={18} color="var(--color-celeste)" />
+                Tipo de Entrega
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <label style={{ padding: '1rem', border: `2px solid ${formData.deliveryType === 'home' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-md)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: formData.deliveryType === 'home' ? 'rgba(0,180,216,0.05)' : 'transparent' }}>
+                  <input type="radio" name="deliveryType" value="home" checked={formData.deliveryType === 'home'} onChange={handleInputChange} style={{ display: 'none' }} />
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${formData.deliveryType === 'home' ? 'var(--color-celeste)' : 'var(--border-color)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {formData.deliveryType === 'home' && <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-celeste)' }} />}
+                  </div>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Email</div>
-                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.email}</div>
+                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>Envío a Domicilio</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{deliveryCost > 0 ? `Bs. ${deliveryCost}` : 'Gratis'}</div>
                   </div>
+                </label>
+                <label style={{ padding: '1rem', border: `2px solid ${formData.deliveryType === 'showroom' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-md)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: formData.deliveryType === 'showroom' ? 'rgba(0,180,216,0.05)' : 'transparent' }}>
+                  <input type="radio" name="deliveryType" value="showroom" checked={formData.deliveryType === 'showroom'} onChange={handleInputChange} style={{ display: 'none' }} />
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${formData.deliveryType === 'showroom' ? 'var(--color-celeste)' : 'var(--border-color)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {formData.deliveryType === 'showroom' && <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-celeste)' }} />}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>Recoger en Showroom</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Gratis</div>
+                  </div>
+                </label>
+              </div>
+              {formData.deliveryType === 'showroom' && (
+                <div style={{ marginTop: '1rem' }}>
+                  <label className="form-label">Selecciona Showroom</label>
+                  <select name="selectedShowroom" value={formData.selectedShowroom} onChange={handleInputChange} className="form-input">
+                    {SHOWROOMS.map(s => <option key={s.id} value={s.id}>{s.name} - {s.city}</option>)}
+                  </select>
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
-                <MapPin size={16} color="var(--color-celeste)" />
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Dirección</div>
-                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{formData.address}, {formData.zone}, {formData.city}</div>
-                </div>
+            </section>
+
+            {/* Payment Method */}
+            <section style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CreditCard size={18} color="var(--color-celeste)" />
+                Método de Pago
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {[
+                  { value: 'qr', icon: CheckCircle2, label: 'QR / SINPE', desc: 'Pago inmediato con código QR' },
+                  { value: 'transfer', icon: Building, label: 'Transferencia Bancaria', desc: 'BCP, BNB, Mercantil, etc.' },
+                  { value: 'card', icon: Smartphone, label: 'Tarjeta Crédito/Débito', desc: 'Visa, Mastercard' },
+                ].map(method => (
+                  <label key={method.value} style={{ padding: '1rem', border: `2px solid ${formData.paymentMethod === method.value ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-md)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: formData.paymentMethod === method.value ? 'rgba(0,180,216,0.05)' : 'transparent' }}>
+                    <input type="radio" name="paymentMethod" value={method.value} checked={formData.paymentMethod === method.value} onChange={handleInputChange} style={{ display: 'none' }} />
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${formData.paymentMethod === method.value ? 'var(--color-celeste)' : 'var(--border-color)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {formData.paymentMethod === method.value && <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: 'var(--color-celeste)' }} />}
+                    </div>
+                    <method.icon size={20} color={formData.paymentMethod === method.value ? 'var(--color-celeste)' : 'var(--text-muted)'} />
+                    <div>
+                      <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{method.label}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{method.desc}</div>
+                    </div>
+                  </label>
+                ))}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
-                <Truck size={16} color="var(--color-celeste)" />
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Entrega</div>
-                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>
-                    {formData.deliveryType === 'home' ? 'Envío a Domicilio' : `Recoger en ${selectedShowroomData?.name || formData.selectedShowroom}`}
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
-                <FileText size={16} color="var(--color-celeste)" />
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Método de Pago</div>
-                  <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{selectedPaymentLabel}</div>
-                </div>
-              </div>
-            </div>
+            </section>
+
+            {/* Notes */}
+            <section style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FileText size={18} color="var(--color-celeste)" />
+                Notas Adicionales
+              </h3>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                className="form-input"
+                placeholder="Instrucciones especiales de entrega, horarios preferidos, etc. (opcional)"
+                rows={3}
+                style={{ resize: 'vertical', width: '100%' }}
+              />
+            </section>
           </div>
-        )}
 
-        {checkoutStep < 5 && (
-          <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.5rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                <span>Subtotal:</span>
-                <span>Bs. {subtotal.toLocaleString('es-BO')}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                <span>Envío:</span>
-                <span style={{ color: deliveryCost === 0 ? 'var(--color-success)' : undefined }}>
-                  {deliveryCost === 0 ? 'Gratis' : `Bs. ${deliveryCost.toLocaleString('es-BO')}`}
-                </span>
-              </div>
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', fontWeight: '700', fontSize: '1.1rem' }}>
-                <span>Total:</span>
-                <span>Bs. {total.toLocaleString('es-BO')}</span>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-              {checkoutStep > 1 && (
-                <button className="btn btn-outline" onClick={handlePrevStep} style={{ flex: 1 }}>
-                  <ArrowLeft size={16} />
-                  <span>Anterior</span>
-                </button>
-              )}
-              {checkoutStep < 4 ? (
-                <button className="btn btn-primary" onClick={handleNextStep} style={{ flex: 1 }}>
-                  <span>Continuar</span>
-                  <ArrowRight size={16} />
-                </button>
-              ) : (
-                <button className="btn btn-primary" onClick={handleConfirmOrder} disabled={isProcessing} style={{ flex: 1 }}>
-                  <ShieldCheck size={16} />
-                  <span>{isProcessing ? 'Procesando...' : 'Confirmar Pedido'}</span>
-                </button>
-              )}
-            </div>
-          </>
-        )}
-
-        {checkoutStep === 5 && orderConfirmed && (
-          <div style={{ padding: '2rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-            <CheckCircle2 size={64} color="var(--color-celeste)" style={{ marginBottom: '1rem' }} />
-            <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>¡Pedido Confirmado!</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Tu pedido <strong>#{orderConfirmed.orderNumber || orderConfirmed.orderId?.slice(0, 8)}</strong> ha sido registrado.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '300px', margin: '0 auto 1.5rem' }}>
-              <button className="btn btn-primary" onClick={handlePayment} disabled={isProcessing} style={{ width: '100%' }}>
-                {isProcessing ? 'Procesando...' : 'Completar Pago'}
-              </button>
-              <a
-                href={`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola PRICOM, acabo de realizar el pedido #${orderConfirmed.orderNumber || orderConfirmed.orderId?.slice(0, 8)}. Necesito asistencia con el pago.`)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-whatsapp"
-                style={{ width: '100%' }}
+          {/* Right Column - Order Summary (Sticky) */}
+          <div style={{ position: 'sticky', top: '6rem' }}>
+            <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+              {/* Header */}
+              <div
+                style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                onClick={() => setExpandedSummary(!expandedSummary)}
               >
-                <MessageCircle size={16} />
-                <span>Ayuda por WhatsApp</span>
-              </a>
-              <button className="btn btn-outline" onClick={() => navigate('/')} style={{ width: '100%' }}>
-                Seguir Comprando
-              </button>
+                <h3 style={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Package size={18} />
+                  Resumen del Pedido
+                  <span style={{ backgroundColor: 'var(--color-celeste)', color: '#fff', fontSize: '0.7rem', fontWeight: '700', padding: '2px 8px', borderRadius: '99px' }}>
+                    {cart.reduce((acc, item) => acc + item.quantity, 0)}
+                  </span>
+                </h3>
+                {expandedSummary ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </div>
+
+              {/* Items */}
+              {expandedSummary && (
+                <div style={{ padding: '1rem 1.25rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '300px', overflowY: 'auto' }}>
+                    {cart.map(item => (
+                      <div key={item.product?.id || item.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                        <div style={{ position: 'relative' }}>
+                          <img
+                            src={item.product?.images?.[0] || item.images?.[0]}
+                            alt={item.product?.name || item.name}
+                            style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
+                          />
+                          <span style={{ position: 'absolute', top: '-6px', right: '-6px', backgroundColor: 'var(--color-celeste)', color: '#fff', fontSize: '0.65rem', fontWeight: '700', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {item.quantity}
+                          </span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.product?.name || item.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>x{item.quantity}</div>
+                        </div>
+                        <div style={{ fontWeight: '700', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>Bs. {((item.product?.price || item.price) * item.quantity).toLocaleString('es-BO')}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Promo Code */}
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input type="text" className="form-input" placeholder="Código de descuento" style={{ flex: 1, fontSize: '0.85rem' }} />
+                      <button className="btn btn-outline btn-sm" style={{ flexShrink: 0 }}>Aplicar</button>
+                    </div>
+                  </div>
+
+                  {/* Totals */}
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.88rem' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Subtotal</span>
+                      <span>Bs. {subtotal.toLocaleString('es-BO')}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.88rem' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Envío</span>
+                      <span style={{ color: deliveryCost === 0 ? 'var(--color-success)' : 'inherit' }}>
+                        {deliveryCost === 0 ? 'Gratis' : `Bs. ${deliveryCost}`}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '2px solid var(--border-color)', fontSize: '1.1rem', fontWeight: '800' }}>
+                      <span>Total</span>
+                      <span style={{ color: 'var(--color-azul-oscuro)' }}>Bs. {total.toLocaleString('es-BO')}</span>
+                    </div>
+                  </div>
+
+                  {/* CTA Button */}
+                  <button
+                    onClick={handleConfirmOrder}
+                    disabled={isProcessing}
+                    className="btn btn-primary"
+                    style={{ width: '100%', marginTop: '1rem', padding: '1rem', fontSize: '1rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isProcessing ? 0.7 : 1 }}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="spinner" style={{ width: '18px', height: '18px' }} />
+                        Procesando...
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={18} />
+                        Comprar Ahora - Bs. {total.toLocaleString('es-BO')}
+                      </>
+                    )}
+                  </button>
+
+                  {/* Trust Signals */}
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      <ShieldCheck size={14} color="var(--color-success)" />
+                      <span>Compra 100% segura y protegida</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      <Truck size={14} color="var(--color-celeste)" />
+                      <span>Envío gratis en Santa Cruz, La Paz y Cochabamba</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      <CheckCircle2 size={14} color="var(--color-success)" />
+                      <span>Garantía oficial Sealy de 5 años</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* WhatsApp Support */}
+            <a
+              href={`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=Hola, necesito ayuda con mi pedido`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', padding: '0.75rem', backgroundColor: '#25D366', color: '#fff', borderRadius: 'var(--radius-md)', textDecoration: 'none', fontWeight: '600', fontSize: '0.85rem' }}
+            >
+              <MessageCircle size={18} />
+              ¿Necesitas ayuda? Chatea con nosotros
+            </a>
           </div>
-        )}
+        </div>
       </main>
       <Footer />
     </>
