@@ -3,6 +3,7 @@ import {
   Users, DollarSign, TrendingUp, CheckCircle, 
   Send, Phone, MapPin, User, ArrowRight, Star, Shield
 } from 'lucide-react';
+import { BOLIVIA_DEPARTMENTS } from '../../data/showrooms';
 
 export default function PromoterSection() {
   const [formData, setFormData] = useState({
@@ -226,14 +227,12 @@ export default function PromoterSection() {
                     Ciudad
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <MapPin size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                    <input
-                      type="text"
+                    <MapPin size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
+                    <select
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
                       required
-                      placeholder="Ej: Santa Cruz, La Paz, Cochabamba"
                       style={{
                         width: '100%',
                         padding: '0.75rem 1rem 0.75rem 2.5rem',
@@ -245,7 +244,16 @@ export default function PromoterSection() {
                         fontFamily: 'var(--font-body)',
                         boxSizing: 'border-box',
                       }}
-                    />
+                    >
+                      <option value="">Selecciona tu ciudad</option>
+                      {BOLIVIA_DEPARTMENTS.map(dept => (
+                        <optgroup key={dept.id} label={dept.name}>
+                          {dept.cities.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
