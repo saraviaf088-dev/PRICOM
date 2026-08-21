@@ -400,6 +400,19 @@ export function AppProvider({ children }) {
     showToast('Sesión Cerrada', 'Has salido del panel de administración.', 'info');
   }, [showToast]);
 
+  const changeAdminCredentials = useCallback(async (currentPassword, newUsername, newPassword) => {
+    try {
+      const result = await authAPI.changeCredentials(currentPassword, newUsername, newPassword);
+      setAdminToken(result.token);
+      storage.set(CONFIG.STORAGE_KEYS.ADMIN_TOKEN, result.token);
+      showToast('Credenciales Actualizadas', 'Tu usuario y/o contraseña han sido cambiados.', 'success');
+      return result;
+    } catch (err) {
+      showToast('Error', err.message || 'No se pudieron actualizar las credenciales.', 'warning');
+      throw err;
+    }
+  }, [showToast]);
+
   const fetchAdminStats = useCallback(async () => {
     try {
       const stats = await statsAPI.getDashboard();
@@ -613,6 +626,7 @@ export function AppProvider({ children }) {
     adminOrders,
     adminLogin,
     adminLogout,
+    changeAdminCredentials,
     adminAddProduct,
     adminUpdateProduct,
     adminDeleteProduct,
@@ -640,7 +654,7 @@ export function AppProvider({ children }) {
     recordSearch, resetFilters, setTheme, setSearchQuery,
     setFilters, setActiveModal, setSelectedProduct,
     setSelectedArticle, setCheckoutStep, setUser,
-    adminLogin, adminLogout, adminAddProduct,
+    adminLogin, adminLogout, changeAdminCredentials, adminAddProduct,
     adminUpdateProduct, adminDeleteProduct,
     fetchAdminStats, fetchAdminOrders, updateOrderStatus,
     adminUpdateOrder, adminDeleteOrder, monthlySales, fetchMonthlySales,

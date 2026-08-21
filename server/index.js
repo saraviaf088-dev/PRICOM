@@ -210,6 +210,41 @@ app.post('/api/auth/login', async (req, res) => {
   res.json({ token, admin: { id: admin.id, username: admin.username, role: admin.role } });
 });
 
+// Change admin credentials
+app.put('/api/auth/change-credentials', authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newUsername, newPassword } = req.body;
+    const admins = await readCollection('admins');
+    const admin = admins.find(a => a.id === req.admin.id);
+    
+    if (!admin) return res.status(404).json({ error: 'Administrador no encontrado' });
+    
+    if (!currentPassword) return res.status(400).json({ error: 'Debes ingresar tu contraseña actual' });
+    
+    const validPassword = bcrypt.compareSync(currentPassword, admin.password);
+    if (!validPassword) return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+    
+    if (newUsername) {
+      const existing = admins.find(a => a.username === newUsername && a.id !== admin.id);
+      if (existing) return res.status(400).json({ error: 'Este nombre de usuario ya está en uso' });
+      admin.username = newUsername;
+    }
+    
+    if (newPassword) {
+      if (newPassword.length < 8) return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 8 caracteres' });
+      admin.password = bcrypt.hashSync(newPassword, 10);
+    }
+    
+    admin.updatedAt = new Date().toISOString();
+    await writeCollection('admins', admins);
+    
+    const newToken = jwt.sign({ id: admin.id, username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ token: newToken, admin: { id: admin.id, username: admin.username, role: admin.role } });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar credenciales' });
+  }
+});
+
 // ==================== USER ROUTES ====================
 
 // User Registration

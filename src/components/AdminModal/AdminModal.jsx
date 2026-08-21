@@ -3,7 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { 
   LayoutDashboard, Plus, Trash2, Edit3, Save, X, DollarSign, Package, 
   MessageCircle, BarChart3, Lock, LogOut, Eye, EyeOff, ShoppingBag, 
-  Clock, CheckCircle, Truck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Image
+  Clock, CheckCircle, Truck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Image,
+  Settings, Shield
 } from 'lucide-react';
 
 const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, isSaving }) => (
@@ -151,7 +152,7 @@ export default function AdminModal({ fullPage = false }) {
   const { 
     activeModal, setActiveModal, 
     products, adminAddProduct, adminUpdateProduct, adminDeleteProduct, 
-    isAdminAuth, adminLogin, adminLogout,
+    isAdminAuth, adminLogin, adminLogout, changeAdminCredentials,
     adminStats, adminOrders, fetchAdminStats, fetchAdminOrders, updateOrderStatus,
     syncProductsToServer,
     showToast 
@@ -166,6 +167,8 @@ export default function AdminModal({ fullPage = false }) {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [orderFilter, setOrderFilter] = useState('all');
   const [isSaving, setIsSaving] = useState(false);
+  const [credForm, setCredForm] = useState({ currentPassword: '', newUsername: '', newPassword: '', confirmPassword: '' });
+  const [showCredPasswords, setShowCredPasswords] = useState({ current: false, newPass: false });
 
   const [newProd, setNewProd] = useState({
     id: '',
@@ -415,6 +418,7 @@ export default function AdminModal({ fullPage = false }) {
             { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
             { id: 'orders', label: 'Pedidos', icon: ShoppingBag },
             { id: 'products', label: 'Productos', icon: Package },
+            { id: 'settings', label: 'Configuración', icon: Settings },
           ].map(tab => (
             <button
               key={tab.id}
@@ -825,6 +829,116 @@ export default function AdminModal({ fullPage = false }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === 'settings' && (
+          <div style={{ padding: '1.5rem' }}>
+            <h4 style={{ fontSize: '1.15rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Shield size={20} />
+              Seguridad y Credenciales
+            </h4>
+
+            <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '1.5rem', maxWidth: '500px' }}>
+              <h5 style={{ fontWeight: '700', marginBottom: '1rem', color: 'var(--color-celeste)' }}>Cambiar Usuario y/o Contraseña</h5>
+
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontWeight: '600', fontSize: '0.85rem' }}>Contraseña Actual (requerida)</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showCredPasswords.current ? 'text' : 'password'}
+                    className="form-input"
+                    value={credForm.currentPassword}
+                    onChange={(e) => setCredForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    placeholder="Ingresa tu contraseña actual"
+                    style={{ paddingRight: '2.5rem' }}
+                  />
+                  <button type="button" onClick={() => setShowCredPasswords(prev => ({ ...prev, current: !prev.current }))} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    {showCredPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontWeight: '600', fontSize: '0.85rem' }}>Nuevo Nombre de Usuario (opcional)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={credForm.newUsername}
+                  onChange={(e) => setCredForm(prev => ({ ...prev, newUsername: e.target.value }))}
+                  placeholder="Dejar vacío para mantener el actual"
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label className="form-label" style={{ fontWeight: '600', fontSize: '0.85rem' }}>Nueva Contraseña (opcional)</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showCredPasswords.newPass ? 'text' : 'password'}
+                    className="form-input"
+                    value={credForm.newPassword}
+                    onChange={(e) => setCredForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                    placeholder="Mínimo 8 caracteres"
+                    style={{ paddingRight: '2.5rem' }}
+                  />
+                  <button type="button" onClick={() => setShowCredPasswords(prev => ({ ...prev, newPass: !prev.newPass }))} style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    {showCredPasswords.newPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {credForm.newPassword && (
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" style={{ fontWeight: '600', fontSize: '0.85rem' }}>Confirmar Nueva Contraseña</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    value={credForm.confirmPassword}
+                    onChange={(e) => setCredForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    placeholder="Repite la nueva contraseña"
+                  />
+                </div>
+              )}
+
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  if (!credForm.currentPassword) {
+                    showToast('Error', 'Debes ingresar tu contraseña actual.', 'warning');
+                    return;
+                  }
+                  if (!credForm.newUsername && !credForm.newPassword) {
+                    showToast('Error', 'Debes cambiar al menos el usuario o la contraseña.', 'warning');
+                    return;
+                  }
+                  if (credForm.newPassword) {
+                    if (credForm.newPassword.length < 8) {
+                      showToast('Error', 'La nueva contraseña debe tener al menos 8 caracteres.', 'warning');
+                      return;
+                    }
+                    if (credForm.newPassword !== credForm.confirmPassword) {
+                      showToast('Error', 'Las contraseñas no coinciden.', 'warning');
+                      return;
+                    }
+                  }
+                  try {
+                    setIsSaving(true);
+                    await changeAdminCredentials(credForm.currentPassword, credForm.newUsername || undefined, credForm.newPassword || undefined);
+                    setCredForm({ currentPassword: '', newUsername: '', newPassword: '', confirmPassword: '' });
+                  } catch (err) {
+                    // Error ya mostrado por changeAdminCredentials
+                  } finally {
+                    setIsSaving(false);
+                  }
+                }}
+                disabled={isSaving || !credForm.currentPassword}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}
+              >
+                {isSaving ? <RefreshCw size={16} className="spin" /> : <Save size={16} />}
+                <span>{isSaving ? 'Guardando...' : 'Guardar Cambios'}</span>
+              </button>
             </div>
           </div>
         )}

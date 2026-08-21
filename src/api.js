@@ -72,6 +72,13 @@ export const authAPI = {
     }
     throw new Error('Credenciales incorrectas');
   },
+
+  changeCredentials: async (currentPassword, newUsername, newPassword) => {
+    return await request('/auth/change-credentials', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newUsername, newPassword }),
+    });
+  },
 };
 
 // ==================== PRODUCTS ====================
