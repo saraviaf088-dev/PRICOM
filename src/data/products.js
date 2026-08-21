@@ -9,7 +9,7 @@ export const PRODUCTS = [
     slug: "sofa-sealy-santa-cruz-seafoam",
     name: "Sealy Santa Cruz Seafoam",
     brand: "Sealy",
-    category: "Sofás",
+    category: "Sofás Cama",
     subCategory: "Sofás de 3 Cuerpos",
     price: 9500,
     originalPrice: 18999,
@@ -65,7 +65,7 @@ export const PRODUCTS = [
     slug: "sofa-sealy-santa-cruz-slate",
     name: "Sealy Santa Cruz Slate",
     brand: "Sealy",
-    category: "Sofás",
+    category: "Sofás Cama",
     subCategory: "Sofás de 3 Cuerpos",
     price: 9500,
     originalPrice: 18999,
@@ -264,155 +264,6 @@ export const PRODUCTS = [
     locations: ["Santa Cruz", "La Paz", "Cochabamba"]
   },
   {
-    id: "sealy-gameday-ra",
-    slug: "sillon-reclinable-sealy-gameday-ra",
-    name: "Sealy Gameday Azul",
-    brand: "Sealy",
-    category: "Reclinables",
-    subCategory: "Sillones Reclinables de Lujo",
-    price: 6800,
-    originalPrice: 11900,
-    discount: 43,
-    isOffer: true,
-    isNew: true,
-    isFeatured: true,
-    rating: 5.0,
-    reviewCount: 64,
-    images: [
-      "/images/SEALY-GAMEDAY-RA A17-114/1.jpg",
-      "/images/SEALY-GAMEDAY-RA A17-114/2.jpg",
-      "/images/SEALY-GAMEDAY-RA A17-114/3.jpg",
-      "/images/SEALY-GAMEDAY-RA A17-114/4.jpg",
-      "/images/SEALY-GAMEDAY-RA A17-114/5.jpg"
-    ],
-    colors: [
-      { name: "Azul", hex: "#1e3a5f", active: true }
-    ],
-    material: "Cuero Sintético Transpirable 'Air-Leather' con Mecanismo Reclinable Zero-Gravity",
-    style: "Contemporáneo",
-    dimensions: {
-      width: "102 cm",
-      depth: "98 cm",
-      height: "104 cm",
-      extendedLength: "172 cm"
-    },
-    shortDescription: "El sillón reclinable definitivo para cine en casa y descanso total con soporte lumbar ergonómico y reclinación suave de múltiples ángulos.",
-    fullDescription: "Diseñado para los amantes del cine en casa, lectura y siestas reparadoras, el Sealy Gameday RA incorpora un mecanismo basculante de suavidad milimétrica. Su soporte lumbar activo y reposacabezas acolchado abrazan tu cuerpo para aliviar tensiones en la columna.",
-    features: [
-      "Mecanismo de reclinación ergonómica suave hasta 160 grados.",
-      "Soporte lumbar anatómico certificado para descanso postural.",
-      "Tapizado 'Air-Leather' resistente al calor y al desgaste diario.",
-      "Portavasos discretos y bolsillo lateral para control remoto."
-    ],
-    specs: [
-      { label: "Mecanismo", value: "Reclinación manual asistida por resorte de gas" },
-      { label: "Capacidad Peso", value: "Hasta 160 kg" },
-      { label: "Base", value: "Estructura metálica de acero al carbono" },
-      { label: "Garantía", value: "5 Años Sealy Oficial" }
-    ],
-    warranty: "5 Años de Garantía Oficial Sealy",
-    availability: "En Stock - Envío Gratis Santa Cruz y La Paz",
-    stockCount: 11,
-    locations: ["Santa Cruz", "La Paz", "Cochabamba"]
-  },
-  {
-    id: "sealy-gameday-rg",
-    slug: "sillon-reclinable-sealy-gameday-rg",
-    name: "Sealy Gameday Gris",
-    brand: "Sealy",
-    category: "Reclinables",
-    subCategory: "Sillones Reclinables de Lujo",
-    price: 6800,
-    originalPrice: 11900,
-    discount: 43,
-    isOffer: true,
-    isNew: false,
-    isFeatured: false,
-    rating: 4.9,
-    reviewCount: 41,
-    images: [
-      "/images/SEALY-GAMEDAY-RG A4-175/1.jpg",
-      "/images/SEALY-GAMEDAY-RG A4-175/2.jpg",
-      "/images/SEALY-GAMEDAY-RG A4-175/3.jpg",
-      "/images/SEALY-GAMEDAY-RG A4-175/4.jpg",
-      "/images/SEALY-GAMEDAY-RG A4-175/5.jpg"
-    ],
-    colors: [
-      { name: "Gris", hex: "#7a8288", active: true }
-    ],
-    material: "Tapiz Gris Plomo Textil Microfibra con acolchado multicapa Sealy",
-    style: "Moderno",
-    dimensions: {
-      width: "102 cm",
-      depth: "98 cm",
-      height: "104 cm"
-    },
-    shortDescription: "Sillón reclinable Gameday en acabado Gris Plomo, ideal para complementar salas modernas y espacios multimedia.",
-    fullDescription: "Confort premium y soporte ortopédico de hombros a pies en un elegante tono gris ceniza de fácil combinación.",
-    features: [
-      "Reclinación multiposición.",
-      "Espuma de alta densidad indeformable.",
-      "Reposapiés acolchado integral."
-    ],
-    specs: [
-      { label: "Capacidad", value: "1 Persona (hasta 150 kg)" },
-      { label: "Tapiz", value: "Microfibra repelente" }
-    ],
-    warranty: "5 Años Sealy Oficial",
-    availability: "En Stock",
-    stockCount: 8,
-    locations: ["Santa Cruz", "La Paz"]
-  },
-  {
-    id: "sealy-gameday-rn",
-    slug: "sillon-reclinable-sealy-gameday-rn",
-    name: "Sealy Gameday Negro",
-    brand: "Sealy",
-    category: "Reclinables",
-    subCategory: "Sillones Reclinables de Lujo",
-    price: 6990,
-    originalPrice: 12500,
-    discount: 44,
-    isOffer: false,
-    isNew: true,
-    isFeatured: false,
-    rating: 4.9,
-    reviewCount: 33,
-    images: [
-      "/images/SEALY-GAMEDAY-RN 11233/1.jpg",
-      "/images/SEALY-GAMEDAY-RN 11233/2.jpg",
-      "/images/SEALY-GAMEDAY-RN 11233/3.jpg",
-      "/images/SEALY-GAMEDAY-RN 11233/4.jpg",
-      "/images/SEALY-GAMEDAY-RN 11233/5.jpg",
-      "/images/SEALY-GAMEDAY-RN 11233/6.jpg"
-    ],
-    colors: [
-      { name: "Negro", hex: "#1a1c20", active: true }
-    ],
-    material: "Ecopiel Premium Negro Mate con tratamiento atérmico",
-    style: "Ejecutivo / Moderno",
-    dimensions: {
-      width: "102 cm",
-      depth: "98 cm",
-      height: "104 cm"
-    },
-    shortDescription: "Elegancia ejecutiva en negro azabache con la mejor tecnología de reclinación y amortiguación Sealy.",
-    fullDescription: "La opción preferida para despachos, bibliotecas y salas de entretenimiento de alto nivel.",
-    features: [
-      "Acabado negro mate de fácil limpieza.",
-      "Base antivuelco de alta seguridad.",
-      "Reposacabezas independiente."
-    ],
-    specs: [
-      { label: "Garantía", value: "5 Años Sealy" },
-      { label: "Material", value: "Cuero sintético de grado automotriz" }
-    ],
-    warranty: "5 Años Sealy Oficial",
-    availability: "En Stock",
-    stockCount: 5,
-    locations: ["Santa Cruz", "La Paz", "Cochabamba"]
-  },
-  {
     id: "sealy-kennedy-chive",
     slug: "sofa-cama-sealy-kennedy-chive",
     name: "Sealy Kennedy Chive",
@@ -518,7 +369,7 @@ export const PRODUCTS = [
     slug: "juego-de-sala-sealy-klein-seccional",
     name: "Sealy Klein Modular Seccional",
     brand: "Sealy",
-    category: "Juegos de Sala",
+    category: "Sofás Cama",
     subCategory: "Seccionales Modulares",
     price: 14500,
     originalPrice: 24900,
@@ -570,7 +421,7 @@ export const PRODUCTS = [
     slug: "sofa-sealy-muskoka-turquesa",
     name: "Sealy Muskoka Turquesa",
     brand: "Sealy",
-    category: "Sofás",
+    category: "Sofás Cama",
     subCategory: "Sofás de Acento",
     price: 8400,
     originalPrice: 14200,
@@ -620,7 +471,7 @@ export const PRODUCTS = [
     slug: "sofa-sealy-muskoka-beach",
     name: "Sealy Muskoka Beach",
     brand: "Sealy",
-    category: "Sofás",
+    category: "Sofás Cama",
     subCategory: "Sofás de 3 Cuerpos",
     price: 8400,
     originalPrice: 14200,

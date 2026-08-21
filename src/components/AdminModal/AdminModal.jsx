@@ -29,8 +29,6 @@ const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, 
           <select className="form-select" value={product.category} onChange={(e) => onChange({ ...product, category: e.target.value })}>
             <option value="Sofás Cama">Sofás Cama</option>
             <option value="Reclinables">Reclinables</option>
-            <option value="Sofás">Sofás</option>
-            <option value="Juegos de Sala">Juegos de Sala</option>
           </select>
         </div>
         <div className="form-group">
