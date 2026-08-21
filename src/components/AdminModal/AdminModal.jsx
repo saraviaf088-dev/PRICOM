@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Plus, Trash2, Edit3, Save, X, DollarSign, Package, 
   MessageCircle, BarChart3, Lock, LogOut, Eye, EyeOff, ShoppingBag, 
   Clock, CheckCircle, Truck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Image,
-  Settings
+  FileDown
 } from 'lucide-react';
 
 const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, isSaving }) => (
@@ -154,6 +154,7 @@ export default function AdminModal({ fullPage = false }) {
     products, adminAddProduct, adminUpdateProduct, adminDeleteProduct, 
     isAdminAuth, adminLogin, adminLogout,
     adminStats, adminOrders, fetchAdminStats, fetchAdminOrders, updateOrderStatus,
+    adminDeleteOrder,
     syncProductsToServer,
     showToast 
   } = useApp();
@@ -305,6 +306,49 @@ export default function AdminModal({ fullPage = false }) {
   const filteredOrders = orderFilter === 'all' 
     ? adminOrders 
     : adminOrders.filter(o => o.orderStatus === orderFilter);
+
+  const handleExportOrdersExcel = async () => {
+    if (filteredOrders.length === 0) {
+      showToast('Sin datos', 'No hay pedidos para exportar.', 'warning');
+      return;
+    }
+    const XLSX = await import('xlsx');
+    const rows = [];
+    filteredOrders.forEach(order => {
+      (order.items || []).forEach(item => {
+        rows.push({
+          'Nº Pedido': order.orderNumber,
+          'Fecha': new Date(order.createdAt).toLocaleDateString('es-BO'),
+          'Cliente': order.customerName,
+          'Teléfono': order.customerPhone,
+          'Email': order.customerEmail || '',
+          'NIT': order.customerNIT || '',
+          'Producto': item.productName || item.product?.name || '',
+          'Cantidad': item.quantity,
+          'Precio Unitario': (item.price || item.product?.price || 0),
+          'Subtotal': ((item.price || item.product?.price || 0) * item.quantity),
+          'Envío': order.deliveryType === 'home' ? `Domicilio - ${order.city}` : 'Showroom',
+          'Pago': order.paymentMethod || '',
+          'Estado Pedido': getStatusLabel(order.orderStatus),
+          'Total Pedido': order.total,
+        });
+      });
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
+    XLSX.writeFile(wb, `Pedidos_PRICOM_${new Date().toISOString().slice(0,10)}.xlsx`);
+    showToast('Exportado', `Se exportaron ${filteredOrders.length} pedidos a Excel.`, 'success');
+  };
+
+  const handleDeleteOrder = async (orderId, orderNumber) => {
+    if (!window.confirm(`¿Eliminar el pedido ${orderNumber}? Esta acción no se puede deshacer.`)) return;
+    try {
+      await adminDeleteOrder(orderId);
+    } catch (err) {
+      // Error ya mostrado
+    }
+  };
 
   // ── Login Screen ──
   if (!isAdminAuth) {
@@ -575,6 +619,10 @@ export default function AdminModal({ fullPage = false }) {
                   <RefreshCw size={14} />
                   Actualizar
                 </button>
+                <button onClick={handleExportOrdersExcel} className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <FileDown size={14} />
+                  Descargar Excel
+                </button>
               </div>
             </div>
 
@@ -658,17 +706,27 @@ export default function AdminModal({ fullPage = false }) {
                             </select>
                           </td>
                           <td>
-                            <button 
-                              onClick={() => {
-                                const items = order.items?.map(i => `- ${i.productName || i.product?.name} (x${i.quantity})`).join('%0A') || '';
-                                const msg = `*PEDIDO ${order.orderNumber}*%0ACliente: ${order.customerName}%0ATel: ${order.customerPhone}%0ATotal: Bs. ${order.total}%0AEstado: ${getStatusLabel(order.orderStatus)}%0A%0AProductos:%0A${items}`;
-                                window.open(`https://wa.me/${order.customerPhone?.replace(/\D/g, '')}?text=${msg}`, '_blank');
-                              }}
-                              className="btn btn-outline btn-sm"
-                              title="Contactar por WhatsApp"
-                            >
-                              <MessageCircle size={14} />
-                            </button>
+                            <div style={{ display: 'flex', gap: '0.35rem' }}>
+                              <button 
+                                onClick={() => {
+                                  const items = order.items?.map(i => `- ${i.productName || i.product?.name} (x${i.quantity})`).join('%0A') || '';
+                                  const msg = `*PEDIDO ${order.orderNumber}*%0ACliente: ${order.customerName}%0ATel: ${order.customerPhone}%0ATotal: Bs. ${order.total}%0AEstado: ${getStatusLabel(order.orderStatus)}%0A%0AProductos:%0A${items}`;
+                                  window.open(`https://wa.me/${order.customerPhone?.replace(/\D/g, '')}?text=${msg}`, '_blank');
+                                }}
+                                className="btn btn-outline btn-sm"
+                                title="Contactar por WhatsApp"
+                              >
+                                <MessageCircle size={14} />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteOrder(order.id, order.orderNumber)}
+                                className="btn btn-outline btn-sm"
+                                style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
+                                title="Eliminar pedido"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                         {expandedOrder === order.id && (
