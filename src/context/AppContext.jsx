@@ -9,7 +9,7 @@ import confetti from 'canvas-confetti';
 const AppContext = createContext();
 
 // App version - increment to force cache clear
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
 
 export function AppProvider({ children }) {
   // Clear stale cache on version change
@@ -30,9 +30,17 @@ export function AppProvider({ children }) {
     }
   }, []);
   // ── Products Store (editable by Admin) ──
-  const [products, setProducts] = useState(() =>
-    storage.get(CONFIG.STORAGE_KEYS.PRODUCTS, initialProducts)
-  );
+  // Always start with latest products from data file, then merge any custom products from localStorage
+  const [products, setProducts] = useState(() => {
+    const stored = storage.get(CONFIG.STORAGE_KEYS.PRODUCTS, null);
+    // Always use initialProducts as base (latest names from data file)
+    if (stored && Array.isArray(stored)) {
+      // Merge: keep custom products (not in initialProducts) and update existing ones
+      const customProducts = stored.filter(p => !initialProducts.find(ip => ip.id === p.id));
+      return [...initialProducts, ...customProducts];
+    }
+    return initialProducts;
+  });
 
   // ── Cart Store ──
   const [cart, setCart] = useState(() =>
