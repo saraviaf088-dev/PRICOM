@@ -1027,6 +1027,60 @@ export default function AdminModal({ fullPage = false }) {
               </button>
             </div>
 
+            {/* Send Newsletter Form */}
+            <div style={{ backgroundColor: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '1.25rem', marginBottom: '1.5rem' }}>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-celeste)' }}>
+                <Send size={16} />
+                Enviar Newsletter a {newsletterSubscribers.length} suscriptores
+              </h5>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label className="form-label">Asunto del correo *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Ej: Ofertas de fin de semana - Hasta 40% OFF"
+                  id="newsletter-subject"
+                />
+              </div>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label className="form-label">Contenido del correo *</label>
+                <textarea
+                  className="form-input"
+                  placeholder="Escribe el contenido del correo aquí... Puedes usar saltos de línea."
+                  rows={5}
+                  id="newsletter-body"
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  const subject = document.getElementById('newsletter-subject')?.value;
+                  const body = document.getElementById('newsletter-body')?.value;
+                  if (!subject || !body) {
+                    showToast('Campos requeridos', 'Completa el asunto y el contenido del correo.', 'warning');
+                    return;
+                  }
+                  if (!window.confirm(`¿Enviar este correo a ${newsletterSubscribers.length} suscriptores?`)) return;
+                  try {
+                    const result = await newsletterAPI.send(subject, body);
+                    showToast('Correo Enviado', result.message, 'success');
+                    document.getElementById('newsletter-subject').value = '';
+                    document.getElementById('newsletter-body').value = '';
+                  } catch (err) {
+                    showToast('Error', err.message || 'No se pudo enviar el correo. Verifica la configuración SMTP.', 'warning');
+                  }
+                }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <Send size={16} />
+                Enviar Newsletter
+              </button>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                Se enviará desde saraviaf088@gmail.com a todos los suscriptores listados abajo.
+              </p>
+            </div>
+
             {newsletterSubscribers.length === 0 ? (
               <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
                 <Mail size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />

@@ -544,4 +544,10 @@ export const newsletterAPI = {
     localStorage.setItem('pricom_newsletter', JSON.stringify(filtered));
     return { message: 'Suscriptor eliminado' };
   },
+  send: async (subject, body) => {
+    return await request('/newsletter/send', {
+      method: 'POST',
+      body: JSON.stringify({ subject, body }),
+    });
+  },
 };

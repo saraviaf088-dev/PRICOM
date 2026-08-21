@@ -17,6 +17,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'pricom-secret-key-2026';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 
+// SMTP Transport
+const smtpTransport = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_EMAIL || 'saraviaf088@gmail.com',
+    pass: process.env.SMTP_PASS || '',
+  },
+});
+
 // Middleware & Security
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: '10mb' }));
@@ -1132,6 +1141,47 @@ app.delete('/api/newsletter/:id', authMiddleware, async (req, res) => {
   subscribers = subscribers.filter(s => s.id !== req.params.id);
   await writeCollection('newsletter', subscribers);
   res.json({ message: 'Suscriptor eliminado' });
+});
+
+app.post('/api/newsletter/send', authMiddleware, async (req, res) => {
+  const { subject, body } = req.body;
+  if (!subject || !body) {
+    return res.status(400).json({ error: 'Asunto y contenido son requeridos' });
+  }
+  const subscribers = await readCollection('newsletter');
+  if (subscribers.length === 0) {
+    return res.status(400).json({ error: 'No hay suscriptores' });
+  }
+  if (!process.env.SMTP_PASS || process.env.SMTP_PASS === 'TU_APP_PASSWORD_AQUI') {
+    return res.status(500).json({ error: 'SMTP no configurado. Agrega la contraseña de aplicación en .env' });
+  }
+  const emails = subscribers.map(s => s.email);
+  const mailOptions = {
+    from: `"PRICOM Bolivia" <${process.env.SMTP_EMAIL || 'saraviaf088@gmail.com'}>`,
+    to: emails.join(','),
+    subject,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #051063, #00B4D8); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">PRICOM Bolivia</h1>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e0e0e0;">
+          ${body.replace(/\n/g, '<br>')}
+        </div>
+        <div style="background: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #888; border-radius: 0 0 8px 8px;">
+          <p style="margin: 0;">PRICOM Bolivia S.R.L. - Sofás y Reclinables de Alta Gama</p>
+          <p style="margin: 5px 0 0;">Si no deseas recibir estos correos, responde con "CANCELAR".</p>
+        </div>
+      </div>
+    `,
+  };
+  try {
+    await smtpTransport.sendMail(mailOptions);
+    res.json({ message: `Correo enviado a ${emails.length} suscriptores`, sent: emails.length });
+  } catch (err) {
+    console.error('Error sending newsletter:', err);
+    res.status(500).json({ error: 'Error al enviar el correo. Verifica la configuración SMTP.' });
+  }
 });
 
 // Start server
