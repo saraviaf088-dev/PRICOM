@@ -8,7 +8,7 @@ import Footer from '../components/Footer/Footer';
 import {
   Check, ShieldCheck, Truck, CreditCard, Smartphone, Building,
   MessageCircle, CheckCircle2, User, Phone, Mail, MapPin, Lock,
-  Package, ChevronDown, ChevronUp, AlertCircle, FileText, X
+  Package, ChevronDown, ChevronUp, FileText, X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -50,6 +50,7 @@ export default function CheckoutPage() {
     expiry: '',
     cvv: ''
   });
+  const [cardErrors, setCardErrors] = useState({});
 
   if (cart.length === 0 && !orderConfirmed) {
     return (
@@ -75,6 +76,27 @@ export default function CheckoutPage() {
     });
   };
 
+  const handleCardInputChange = (e) => {
+    const { name, value } = e.target;
+    let formatted = value;
+
+    if (name === 'cardNumber') {
+      formatted = value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
+    }
+    if (name === 'expiry') {
+      formatted = value.replace(/\D/g, '');
+      if (formatted.length >= 2) {
+        formatted = formatted.slice(0, 2) + ' / ' + formatted.slice(2, 4);
+      }
+    }
+    if (name === 'cvv') {
+      formatted = value.replace(/\D/g, '').slice(0, 4);
+    }
+
+    setCardData(prev => ({ ...prev, [name]: formatted }));
+    setCardErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
   const subtotal = cartTotal;
   const departmentData = BOLIVIA_DEPARTMENTS.find(d => formData.city.includes(d.cities[0]?.split(' ')[0]) || d.cities.includes(formData.city));
   const deliveryCost = formData.deliveryType === 'home' ? (departmentData?.shippingFee || 0) : 0;
@@ -83,45 +105,38 @@ export default function CheckoutPage() {
   const selectedShowroomData = SHOWROOMS.find(s => s.id === formData.selectedShowroom);
   const selectedPaymentLabel = { qr: 'QR/SINPE', transfer: 'Transferencia Bancaria', card: 'Tarjeta Crédito/Débito' }[formData.paymentMethod] || formData.paymentMethod;
 
-  const handleConfirmOrder = async () => {
-    if (!formData.name || !formData.phone || !formData.address) {
-      showToast('Campos requeridos', 'Por favor completa nombre, teléfono y dirección.', 'warning');
-      return;
-    }
-    if (formData.paymentMethod === 'card') {
-      setShowCardModal(true);
-      return;
-    }
+  const buildOrderData = () => ({
+    customerName: formData.name,
+    customerEmail: formData.email,
+    customerPhone: formData.phone,
+    customerNIT: formData.nit,
+    city: formData.city,
+    zone: formData.zone,
+    address: formData.address,
+    reference: formData.reference,
+    deliveryType: formData.deliveryType,
+    selectedShowroom: formData.deliveryType === 'showroom' ? selectedShowroomData?.name : null,
+    paymentMethod: formData.paymentMethod,
+    items: cart.map(item => ({
+      productId: item.product?.id || item.id,
+      productName: item.product?.name || item.name,
+      price: item.product?.price || item.price,
+      quantity: item.quantity,
+      image: item.product?.images?.[0] || item.images?.[0],
+    })),
+    subtotal,
+    deliveryCost,
+    total,
+    notes: formData.notes,
+  });
+
+  const submitOrder = async () => {
     setIsProcessing(true);
     try {
-      const orderData = {
-        customerName: formData.name,
-        customerEmail: formData.email,
-        customerPhone: formData.phone,
-        customerNIT: formData.nit,
-        city: formData.city,
-        zone: formData.zone,
-        address: formData.address,
-        reference: formData.reference,
-        deliveryType: formData.deliveryType,
-        selectedShowroom: formData.deliveryType === 'showroom' ? selectedShowroomData?.name : null,
-        paymentMethod: formData.paymentMethod,
-        items: cart.map(item => ({
-          productId: item.product?.id || item.id,
-          productName: item.product?.name || item.name,
-          price: item.product?.price || item.price,
-          quantity: item.quantity,
-          image: item.product?.images?.[0] || item.images?.[0],
-        })),
-        subtotal,
-        deliveryCost,
-        total,
-        notes: formData.notes,
-      };
-
-      const result = await createOrder(orderData);
+      const result = await createOrder(buildOrderData());
       if (result) {
         setOrderConfirmed(result);
+        setShowCardModal(false);
         clearCart();
         confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
         showToast('¡Pedido Confirmado!', `Tu pedido ${result.orderNumber} fue registrado exitosamente.`, 'success');
@@ -131,6 +146,33 @@ export default function CheckoutPage() {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleConfirmOrder = () => {
+    if (!formData.name || !formData.phone || !formData.address) {
+      showToast('Campos requeridos', 'Por favor completa nombre, teléfono y dirección.', 'warning');
+      return;
+    }
+    if (formData.paymentMethod === 'card') {
+      setShowCardModal(true);
+      return;
+    }
+    submitOrder();
+  };
+
+  const handleCardPayment = () => {
+    const errors = {};
+    if (!cardData.holderName.trim()) errors.holderName = 'Ingresa el nombre del titular';
+    if (cardData.cardNumber.replace(/\s/g, '').length < 16) errors.cardNumber = 'Número de tarjeta inválido';
+    const parts = cardData.expiry.split(' / ');
+    if (parts.length < 2 || !parts[0] || !parts[1]) errors.expiry = 'Fecha inválida';
+    if (cardData.cvv.length < 3) errors.cvv = 'CVV inválido';
+
+    if (Object.keys(errors).length > 0) {
+      setCardErrors(errors);
+      return;
+    }
+    submitOrder();
   };
 
   if (orderConfirmed) {
@@ -378,62 +420,62 @@ export default function CheckoutPage() {
                       <button className="btn btn-outline btn-sm" style={{ flexShrink: 0 }}>Aplicar</button>
                     </div>
                   </div>
-
-                  {/* Totals */}
-                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.88rem' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Subtotal</span>
-                      <span>Bs. {subtotal.toLocaleString('es-BO')}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.88rem' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Envío</span>
-                      <span style={{ color: deliveryCost === 0 ? 'var(--color-success)' : 'inherit' }}>
-                        {deliveryCost === 0 ? 'Gratis' : `Bs. ${deliveryCost}`}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '2px solid var(--border-color)', fontSize: '1.1rem', fontWeight: '800' }}>
-                      <span>Total</span>
-                      <span style={{ color: 'var(--color-azul-oscuro)' }}>Bs. {total.toLocaleString('es-BO')}</span>
-                    </div>
-                  </div>
-
-                  {/* CTA Button */}
-                  <button
-                    onClick={handleConfirmOrder}
-                    disabled={isProcessing}
-                    className="btn btn-primary"
-                    style={{ width: '100%', marginTop: '1rem', padding: '1rem', fontSize: '1rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isProcessing ? 0.7 : 1 }}
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="spinner" style={{ width: '18px', height: '18px' }} />
-                        Procesando...
-                      </>
-                    ) : (
-                      <>
-                        <Lock size={18} />
-                        Comprar Ahora - Bs. {total.toLocaleString('es-BO')}
-                      </>
-                    )}
-                  </button>
-
-                  {/* Trust Signals */}
-                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      <ShieldCheck size={14} color="var(--color-success)" />
-                      <span>Compra 100% segura y protegida</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      <Truck size={14} color="var(--color-celeste)" />
-                      <span>Envío gratis en Santa Cruz, La Paz y Cochabamba</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      <CheckCircle2 size={14} color="var(--color-success)" />
-                      <span>Garantía oficial Sealy de 5 años</span>
-                    </div>
-                  </div>
                 </div>
               )}
+
+              {/* Totals + CTA (always visible) */}
+              <div style={{ padding: '1rem 1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.88rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Subtotal</span>
+                  <span>Bs. {subtotal.toLocaleString('es-BO')}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.88rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Envío</span>
+                  <span style={{ color: deliveryCost === 0 ? 'var(--color-success)' : 'inherit' }}>
+                    {deliveryCost === 0 ? 'Gratis' : `Bs. ${deliveryCost}`}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '2px solid var(--border-color)', fontSize: '1.1rem', fontWeight: '800' }}>
+                  <span>Total</span>
+                  <span style={{ color: 'var(--color-azul-oscuro)' }}>Bs. {total.toLocaleString('es-BO')}</span>
+                </div>
+
+                {/* CTA Button */}
+                <button
+                  onClick={handleConfirmOrder}
+                  disabled={isProcessing}
+                  className="btn btn-primary"
+                  style={{ width: '100%', marginTop: '1rem', padding: '1rem', fontSize: '1rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isProcessing ? 0.7 : 1 }}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="spinner" style={{ width: '18px', height: '18px' }} />
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={18} />
+                      Comprar Ahora - Bs. {total.toLocaleString('es-BO')}
+                    </>
+                  )}
+                </button>
+
+                {/* Trust Signals */}
+                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    <ShieldCheck size={14} color="var(--color-success)" />
+                    <span>Compra 100% segura y protegida</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    <Truck size={14} color="var(--color-celeste)" />
+                    <span>Envío gratis en Santa Cruz, La Paz y Cochabamba</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    <CheckCircle2 size={14} color="var(--color-success)" />
+                    <span>Garantía oficial Sealy de 5 años</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* WhatsApp Support */}
@@ -449,6 +491,135 @@ export default function CheckoutPage() {
           </div>
         </div>
       </main>
+
+      {/* Card Payment Modal */}
+      {showCardModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(5,16,99,0.75)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', maxWidth: '480px', width: '100%', boxShadow: 'var(--shadow-xl)', overflow: 'hidden' }}>
+            {/* Modal Header */}
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '2px solid #f0ad4e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '700' }}>Formulario de pago</h3>
+              <button onClick={() => setShowCardModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '1.5rem' }}>
+              {/* Cardholder Name */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.4rem' }}>
+                  <span style={{ color: 'var(--color-danger)' }}>*</span> Nombre del titular
+                </label>
+                <input
+                  type="text"
+                  name="holderName"
+                  value={cardData.holderName}
+                  onChange={handleCardInputChange}
+                  placeholder="Nombre como aparece en la tarjeta"
+                  className="form-input"
+                  style={{ borderColor: cardErrors.holderName ? 'var(--color-danger)' : undefined }}
+                />
+                {cardErrors.holderName && <span style={{ fontSize: '0.75rem', color: 'var(--color-danger)', marginTop: '0.25rem', display: 'block' }}>{cardErrors.holderName}</span>}
+              </div>
+
+              {/* Card Number */}
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.4rem' }}>
+                  <span style={{ color: 'var(--color-danger)' }}>*</span> Información de la tarjeta
+                </label>
+                <input
+                  type="text"
+                  name="cardNumber"
+                  value={cardData.cardNumber}
+                  onChange={handleCardInputChange}
+                  placeholder="Número de tarjeta"
+                  className="form-input"
+                  style={{ borderColor: cardErrors.cardNumber ? 'var(--color-danger)' : undefined }}
+                />
+                {cardErrors.cardNumber && <span style={{ fontSize: '0.75rem', color: 'var(--color-danger)', marginTop: '0.25rem', display: 'block' }}>{cardErrors.cardNumber}</span>}
+              </div>
+
+              {/* Expiry & CVV */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.4rem' }}>
+                    <span style={{ color: 'var(--color-danger)' }}>*</span> MM / AA
+                  </label>
+                  <input
+                    type="text"
+                    name="expiry"
+                    value={cardData.expiry}
+                    onChange={handleCardInputChange}
+                    placeholder="MM / AA"
+                    className="form-input"
+                    style={{ borderColor: cardErrors.expiry ? 'var(--color-danger)' : undefined }}
+                  />
+                  {cardErrors.expiry && <span style={{ fontSize: '0.75rem', color: 'var(--color-danger)', marginTop: '0.25rem', display: 'block' }}>{cardErrors.expiry}</span>}
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.4rem' }}>
+                    <span style={{ color: 'var(--color-danger)' }}>*</span> CVV
+                  </label>
+                  <input
+                    type="text"
+                    name="cvv"
+                    value={cardData.cvv}
+                    onChange={handleCardInputChange}
+                    placeholder="CVV"
+                    className="form-input"
+                    style={{ borderColor: cardErrors.cvv ? 'var(--color-danger)' : undefined }}
+                  />
+                  {cardErrors.cvv && <span style={{ fontSize: '0.75rem', color: 'var(--color-danger)', marginTop: '0.25rem', display: 'block' }}>{cardErrors.cvv}</span>}
+                </div>
+              </div>
+
+              {/* Bank Details */}
+              <div style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', padding: '1rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+                <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: 'var(--color-celeste)' }}>Datos de la cuenta PRICOM:</div>
+                <div><strong>Banco:</strong> Banco Nacional de Bolivia (BNB)</div>
+                <div><strong>Cuenta:</strong> 1000242043</div>
+                <div><strong>Swift:</strong> BNBOBOLXXXX</div>
+                <div><strong>Titular:</strong> PRICOM Bolivia S.R.L.</div>
+              </div>
+
+              {/* Pay Button */}
+              <button
+                onClick={handleCardPayment}
+                disabled={isProcessing}
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isProcessing ? 0.7 : 1 }}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="spinner" style={{ width: '18px', height: '18px' }} />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <Lock size={18} />
+                    Pagar BOB {total.toLocaleString('es-BO')}
+                  </>
+                )}
+              </button>
+
+              {/* Security Badges */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                  <ShieldCheck size={14} />
+                  <span>PCI DSS</span>
+                </div>
+                <div style={{ width: '1px', height: '20px', backgroundColor: 'var(--border-color)' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                  <Lock size={14} />
+                  <span>SSL Seguro</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );
