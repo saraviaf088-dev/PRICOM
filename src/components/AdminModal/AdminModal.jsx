@@ -12,6 +12,7 @@ export default function AdminModal() {
     products, adminAddProduct, adminUpdateProduct, adminDeleteProduct, 
     isAdminAuth, adminLogin, adminLogout,
     adminStats, adminOrders, fetchAdminStats, fetchAdminOrders, updateOrderStatus,
+    syncProductsToServer,
     showToast 
   } = useApp();
 
@@ -445,6 +446,25 @@ export default function AdminModal() {
                   {adminStats?.lowStockProducts || 0}
                 </div>
               </div>
+            </div>
+
+            {/* Sync Button */}
+            <div style={{ marginBottom: '1rem' }}>
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  try {
+                    await syncProductsToServer();
+                    alert('Productos sincronizados al servidor correctamente');
+                  } catch (err) {
+                    alert('Error al sincronizar: ' + err.message);
+                  }
+                }}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                <RefreshCw size={16} />
+                Sincronizar Productos al Servidor
+              </button>
             </div>
 
             {/* Top Products */}

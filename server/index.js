@@ -932,11 +932,24 @@ app.get('/api/stats/dashboard', authMiddleware, (req, res) => {
 
 // ==================== SYNC ROUTES ====================
 
-app.post('/api/sync/products', authMiddleware, (req, res) => {
+app.post('/api/sync/products', (req, res) => {
   const { products } = req.body;
   const existing = readCollection('products');
   
-  // Merge: update existing or add new
+  // Only allow sync if DB is empty or request has valid admin token
+  if (existing.length > 0) {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+      try {
+        jwt.verify(token, JWT_SECRET);
+      } catch {
+        return res.status(401).json({ error: 'Token invalido' });
+      }
+    } else {
+      return res.status(403).json({ error: 'Servidor ya tiene productos, se requiere autenticacion' });
+    }
+  }
+  
   for (const newProd of products) {
     const index = existing.findIndex(p => p.id === newProd.id);
     if (index !== -1) {
