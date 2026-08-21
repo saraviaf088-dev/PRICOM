@@ -149,7 +149,15 @@ async function sendVerificationEmail(email, token, userName) {
 initDatabase();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://proy-pricom.vercel.app',
+    'https://pricom.vercel.app'
+  ],
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 
 // Disable caching for all API responses

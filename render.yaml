@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: pricom-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: pricom-data
+      mountPath: /opt/render/project/src/server/data
+      sizeGB: 1
