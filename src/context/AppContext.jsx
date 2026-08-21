@@ -455,10 +455,12 @@ export function AppProvider({ children }) {
     try {
       const created = await productsAPI.create(newProduct);
       setProducts(prev => [created, ...prev]);
+      // Auto-sync to server
+      const allProducts = [created];
+      productsAPI.sync(allProducts).catch(() => {});
       showToast('Producto Creado', `${created.name} fue añadido al catálogo.`, 'success');
       return created;
     } catch (err) {
-      // Fallback to local
       setProducts(prev => [newProduct, ...prev]);
       showToast('Producto Creado', `${newProduct.name} fue añadido (modo local).`, 'success');
       return newProduct;
@@ -471,7 +473,12 @@ export function AppProvider({ children }) {
     } catch (err) {
       // Continue with local update
     }
-    setProducts(prev => prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p)));
+    setProducts(prev => {
+      const next = prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p));
+      // Auto-sync full list to server
+      productsAPI.sync(next).catch(() => {});
+      return next;
+    });
     showToast('Producto Actualizado', `${updatedProduct.name} fue modificado exitosamente.`, 'success');
   }, [showToast]);
 
@@ -481,7 +488,12 @@ export function AppProvider({ children }) {
     } catch (err) {
       // Continue with local delete
     }
-    setProducts(prev => prev.filter(p => p.id !== productId));
+    setProducts(prev => {
+      const next = prev.filter(p => p.id !== productId);
+      // Auto-sync full list to server
+      productsAPI.sync(next).catch(() => {});
+      return next;
+    });
     showToast('Producto Eliminado', 'El producto fue dado de baja del catálogo.', 'info');
   }, [showToast]);
 

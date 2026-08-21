@@ -38,7 +38,7 @@ function writeCollection(name, data) {
 
 function initDatabase() {
   // Seed initial admin from environment variables if not present
-  const adminUser = process.env.INITIAL_ADMIN_USER || 'admin@pricom.bo';
+  const adminUser = process.env.INITIAL_ADMIN_USER || 'admin';
   const adminPass = process.env.INITIAL_ADMIN_PASS || 'PricomOficial2026!';
   
   const admins = readCollection('admins');

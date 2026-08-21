@@ -191,7 +191,22 @@ app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
   const admins = readCollection('admins');
   
-  const admin = admins.find(a => a.username === username);
+  // Check DB admins first
+  let admin = admins.find(a => a.username === username);
+  
+  // Fallback: check hardcoded credentials
+  if (!admin && username === 'admin' && password === 'PricomOficial2026!') {
+    // Auto-create admin with correct username if not exists
+    admin = admins.find(a => a.username === 'admin');
+    if (!admin) {
+      const hashedPassword = bcrypt.hashSync('PricomOficial2026!', 10);
+      const newAdmin = { id: 'admin-1', username: 'admin', password: hashedPassword, role: 'admin', createdAt: new Date().toISOString() };
+      admins.push(newAdmin);
+      writeCollection('admins', admins);
+      admin = newAdmin;
+    }
+  }
+  
   if (!admin) return res.status(401).json({ error: 'Credenciales incorrectas' });
   
   const validPassword = bcrypt.compareSync(password, admin.password);
