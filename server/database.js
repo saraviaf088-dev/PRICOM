@@ -1,21 +1,40 @@
-const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-let supabase = null;
-
+let useSupabase = false;
 if (SUPABASE_URL && SUPABASE_KEY) {
-  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-  console.log('✅ Supabase conectado');
+  useSupabase = true;
+  console.log('✅ Supabase conectado via REST API');
 } else {
   console.log('⚠️  Supabase no configurado, usando archivos locales');
 }
 
-// Fallback: local file storage
-const fs = require('fs');
-const path = require('path');
+// Supabase REST helpers
+async function supabaseRequest(table, method = 'GET', body = null, query = '') {
+  const url = `${SUPABASE_URL}/rest/v1/${table}${query}`;
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': method === 'POST' ? 'return=minimal' : 'return=representation'
+  };
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    console.error(`Supabase ${method} ${table}: ${err}`);
+    return null;
+  }
+  if (res.status === 204) return [];
+  return await res.json();
+}
+
+// Local file storage
 const DB_PATH = path.join(__dirname, 'data');
 if (!fs.existsSync(DB_PATH)) fs.mkdirSync(DB_PATH, { recursive: true });
 
@@ -38,27 +57,38 @@ function writeLocal(name, data) {
 }
 
 async function readCollection(name) {
-  if (supabase) {
-    const { data, error } = await supabase.from(name).select('id, data');
-    if (error) { console.error(`Supabase read ${name}:`, error.message); return []; }
-    return (data || []).map(row => ({ id: row.id, ...row.data }));
+  if (useSupabase) {
+    const rows = await supabaseRequest(name, 'GET', null, '?select=id,data');
+    if (rows === null) return [];
+    return rows.map(row => ({ ...row.data, id: row.id }));
   }
   return readLocal(name);
 }
 
 async function writeCollection(name, data) {
-  if (supabase) {
-    // Upsert all rows
-    const rows = data.map(item => ({
-      id: item.id,
-      data: { ...item },
-      updated_at: new Date().toISOString()
-    }));
-    // Clear and re-insert for simplicity
-    await supabase.from(name).delete().neq('id', '__none__');
-    if (rows.length > 0) {
-      const { error } = await supabase.from(name).upsert(rows, { onConflict: 'id' });
-      if (error) console.error(`Supabase write ${name}:`, error.message);
+  if (useSupabase) {
+    // Delete all existing
+    const existing = await supabaseRequest(name, 'GET', null, '?select=id');
+    if (existing && existing.length > 0) {
+      const ids = existing.map(r => r.id);
+      // Delete in batches (Supabase doesn't support delete all without filter)
+      for (const id of ids) {
+        await supabaseRequest(name, 'DELETE', null, `?id=eq.${encodeURIComponent(id)}`);
+      }
+    }
+    // Insert all
+    if (data.length > 0) {
+      const rows = data.map(item => ({
+        id: item.id,
+        data: item,
+        updated_at: new Date().toISOString()
+      }));
+      // Supabase REST has a limit on array size, insert in batches of 50
+      for (let i = 0; i < rows.length; i += 50) {
+        const batch = rows.slice(i, i + 50);
+        const result = await supabaseRequest(name, 'POST', batch);
+        if (result === null) console.error(`Supabase batch insert failed at index ${i}`);
+      }
     }
     return;
   }
@@ -66,13 +96,9 @@ async function writeCollection(name, data) {
 }
 
 async function addToCollection(name, item) {
-  if (supabase) {
-    const { error } = await supabase.from(name).upsert({
-      id: item.id,
-      data: { ...item },
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'id' });
-    if (error) console.error(`Supabase add ${name}:`, error.message);
+  if (useSupabase) {
+    const row = { id: item.id, data: item, updated_at: new Date().toISOString() };
+    await supabaseRequest(name, 'POST', row);
     return;
   }
   const items = readLocal(name);
@@ -81,16 +107,11 @@ async function addToCollection(name, item) {
 }
 
 async function updateInCollection(name, id, updates) {
-  if (supabase) {
-    const { data, error: fetchErr } = await supabase.from(name).select('data').eq('id', id).single();
-    if (fetchErr || !data) return null;
-    const merged = { ...data.data, ...updates, id };
-    const { error } = await supabase.from(name).upsert({
-      id,
-      data: merged,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'id' });
-    if (error) console.error(`Supabase update ${name}:`, error.message);
+  if (useSupabase) {
+    const rows = await supabaseRequest(name, 'GET', null, `?id=eq.${encodeURIComponent(id)}&select=id,data`);
+    if (!rows || rows.length === 0) return null;
+    const merged = { ...rows[0].data, ...updates, id };
+    await supabaseRequest(name, 'PATCH', { data: merged, updated_at: new Date().toISOString() }, `?id=eq.${encodeURIComponent(id)}`);
     return merged;
   }
   const items = readLocal(name);
@@ -104,9 +125,8 @@ async function updateInCollection(name, id, updates) {
 }
 
 async function deleteFromCollection(name, id) {
-  if (supabase) {
-    const { error } = await supabase.from(name).delete().eq('id', id);
-    if (error) console.error(`Supabase delete ${name}:`, error.message);
+  if (useSupabase) {
+    await supabaseRequest(name, 'DELETE', null, `?id=eq.${encodeURIComponent(id)}`);
     return;
   }
   const items = readLocal(name);
@@ -114,8 +134,7 @@ async function deleteFromCollection(name, id) {
 }
 
 function initDatabase() {
-  if (!supabase) {
-    // Local file mode
+  if (!useSupabase) {
     const admins = readLocal('admins');
     if (admins.length === 0) {
       const adminUser = process.env.INITIAL_ADMIN_USER || 'admin';
@@ -124,12 +143,10 @@ function initDatabase() {
       admins.push({ id: 'admin-1', username: adminUser, password: hashedPassword, role: 'admin', createdAt: new Date().toISOString() });
       writeLocal('admins', admins);
     }
+    ['products', 'orders', 'payments', 'users', 'admins'].forEach(name => {
+      if (!fs.existsSync(path.join(DB_PATH, `${name}.json`))) writeLocal(name, []);
+    });
   }
-  ['products', 'orders', 'payments', 'users', 'admins'].forEach(name => {
-    if (!supabase && !fs.existsSync(path.join(DB_PATH, `${name}.json`))) {
-      writeLocal(name, []);
-    }
-  });
   console.log('✅ Base de datos inicializada correctamente');
 }
 
