@@ -313,9 +313,12 @@ export default function AdminModal({ fullPage = false }) {
       return;
     }
     const XLSX = await import('xlsx');
+    const fecha = new Date().toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' });
     const rows = [];
+    let totalGeneral = 0;
     filteredOrders.forEach(order => {
       (order.items || []).forEach(item => {
+        const subtotal = (item.price || item.product?.price || 0) * item.quantity;
         rows.push({
           'Nº Pedido': order.orderNumber,
           'Fecha': new Date(order.createdAt).toLocaleDateString('es-BO'),
@@ -326,15 +329,32 @@ export default function AdminModal({ fullPage = false }) {
           'Producto': item.productName || item.product?.name || '',
           'Cantidad': item.quantity,
           'Precio Unitario': (item.price || item.product?.price || 0),
-          'Subtotal': ((item.price || item.product?.price || 0) * item.quantity),
+          'Subtotal': subtotal,
           'Envío': order.deliveryType === 'home' ? `Domicilio - ${order.city}` : 'Showroom',
           'Pago': order.paymentMethod || '',
           'Estado Pedido': getStatusLabel(order.orderStatus),
           'Total Pedido': order.total,
         });
       });
+      totalGeneral += order.total;
     });
-    const ws = XLSX.utils.json_to_sheet(rows);
+
+    const ws = XLSX.utils.aoa_to_sheet([
+      [`Reporte de Ventas - ${fecha}`],
+      [],
+      Object.keys(rows[0]),
+      ...rows.map(r => Object.values(r)),
+      [],
+      [],
+      ['TOTAL GENERAL', '', '', '', '', '', '', '', '', '', '', '', '', totalGeneral],
+    ]);
+
+    ws['!cols'] = [
+      { wch: 14 }, { wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 24 },
+      { wch: 14 }, { wch: 28 }, { wch: 10 }, { wch: 14 }, { wch: 12 },
+      { wch: 22 }, { wch: 14 }, { wch: 16 }, { wch: 14 },
+    ];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
     XLSX.writeFile(wb, `Pedidos_PRICOM_${new Date().toISOString().slice(0,10)}.xlsx`);
