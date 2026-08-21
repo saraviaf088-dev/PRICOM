@@ -19,19 +19,27 @@ async function supabaseRequest(table, method = 'GET', body = null, query = '') {
   const headers = {
     'apikey': SUPABASE_KEY,
     'Authorization': `Bearer ${SUPABASE_KEY}`,
-    'Content-Type': 'application/json',
-    'Prefer': method === 'POST' ? 'return=minimal' : 'return=representation'
+    'Content-Type': 'application/json'
   };
+  if (method === 'POST' || method === 'PATCH' || method === 'PUT') {
+    headers['Prefer'] = 'return=minimal';
+  }
   const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
-  if (!res.ok) {
+  try {
+    const res = await fetch(url, opts);
+    if (res.status >= 200 && res.status < 300) {
+      const text = await res.text();
+      if (!text || text.trim() === '') return [];
+      try { return JSON.parse(text); } catch { return []; }
+    }
     const err = await res.text();
-    console.error(`Supabase ${method} ${table}: ${err}`);
+    console.error(`Supabase ${method} ${table}: ${res.status} ${err}`);
+    return null;
+  } catch (err) {
+    console.error(`Supabase ${method} ${table} network error:`, err.message);
     return null;
   }
-  if (res.status === 204) return [];
-  return await res.json();
 }
 
 // Local file storage
