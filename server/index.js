@@ -21,7 +21,7 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 const smtpTransport = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.SMTP_EMAIL || 'saraviaf088@gmail.com',
+    user: process.env.SMTP_EMAIL || 'pricomsrlventas@gmail.com',
     pass: process.env.SMTP_PASS || '',
   },
 });
@@ -1157,7 +1157,7 @@ app.post('/api/newsletter/send', authMiddleware, async (req, res) => {
   }
   const emails = subscribers.map(s => s.email);
   const mailOptions = {
-    from: `"PRICOM Bolivia" <${process.env.SMTP_EMAIL || 'saraviaf088@gmail.com'}>`,
+    from: `"PRICOM Bolivia" <${process.env.SMTP_EMAIL || 'pricomsrlventas@gmail.com'}>`,
     to: emails.join(','),
     subject,
     html: `

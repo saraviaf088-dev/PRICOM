@@ -1077,7 +1077,7 @@ export default function AdminModal({ fullPage = false }) {
                 Enviar Newsletter
               </button>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                Se enviará desde saraviaf088@gmail.com a todos los suscriptores listados abajo.
+                Se enviará desde pricomsrlventas@gmail.com a todos los suscriptores listados abajo.
               </p>
             </div>
 
