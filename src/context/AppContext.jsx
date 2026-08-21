@@ -33,13 +33,18 @@ export function AppProvider({ children }) {
   // Always start with latest products from data file, then merge any custom products from localStorage
   const [products, setProducts] = useState(() => {
     const stored = storage.get(CONFIG.STORAGE_KEYS.PRODUCTS, null);
+    const deletedIds = storage.get(CONFIG.STORAGE_KEYS.DELETED_PRODUCTS, []);
+    // Ensure removed-from-source products are always marked as deleted
+    const removedFromSource = ['mesa-comedor-marmol-aura', 'lampara-pie-arco-lumina', 'alfombra-artesanal-altiplano', 'set-jarrones-ceramica-terra'];
+    const allDeleted = [...new Set([...deletedIds, ...removedFromSource])];
+    storage.set(CONFIG.STORAGE_KEYS.DELETED_PRODUCTS, allDeleted);
     // Always use initialProducts as base (latest names from data file)
     if (stored && Array.isArray(stored)) {
       // Merge: keep custom products (not in initialProducts) and update existing ones
       const customProducts = stored.filter(p => !initialProducts.find(ip => ip.id === p.id));
-      return [...initialProducts, ...customProducts];
+      return [...initialProducts, ...customProducts].filter(p => !allDeleted.includes(p.id));
     }
-    return initialProducts;
+    return initialProducts.filter(p => !allDeleted.includes(p.id));
   });
 
   // ── Cart Store ──
@@ -494,6 +499,12 @@ export function AppProvider({ children }) {
       await productsAPI.delete(productId);
     } catch (err) {
       // Continue with local delete
+    }
+    // Record deleted ID so it doesn't reappear on reload
+    const deletedIds = storage.get(CONFIG.STORAGE_KEYS.DELETED_PRODUCTS, []);
+    if (!deletedIds.includes(productId)) {
+      deletedIds.push(productId);
+      storage.set(CONFIG.STORAGE_KEYS.DELETED_PRODUCTS, deletedIds);
     }
     setProducts(prev => {
       const next = prev.filter(p => p.id !== productId);

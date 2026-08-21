@@ -27,6 +27,7 @@ export const CONFIG = {
     ADMIN_AUTH: 'pricom_admin_auth',
     ADMIN_TOKEN: 'pricom_admin_token',
     OFFERS_END: 'pricom_offers_end',
+    DELETED_PRODUCTS: 'pricom_deleted_products',
   },
 
   // Limits
