@@ -47,6 +47,109 @@ export const BOLIVIA_DEPARTMENTS = [
   { id: "pan", name: "Pando", shippingFee: 250, time: "96 hrs", cities: ["Cobija"] }
 ];
 
+export const ZONES_BY_CITY = {
+  'Santa Cruz de la Sierra': [
+    'Equipetrol Norte', 'Equipetrol Sur', 'San Pedro', 'Quinta Loyola',
+    'Las Palmas', 'Urbarí', 'Villa Fátima', 'Los Lotes', 'Mutualista',
+    'El Pari', 'Plan Tres Mil', 'Las Aguaraguazo', 'La Isla', 'Ciudad Satélite Norte',
+    'Satélite Sur', 'García Lanza', 'Chaplin', 'Santos Dumont',
+    'Villa 1ro de Mayo', 'La Concordia', 'Centro', 'Abaroa',
+    'Suárez Arce', '26 de Febrero', 'Calatillas', 'La Recoba',
+    'Potreros de Buenos Aires', 'Urubó', 'La Guardia'
+  ],
+  'Montero': [
+    'Centro', 'Villa Italia', 'Las Palmas', 'Los Pinos', 'San José'
+  ],
+  'Warnes': [
+    'Centro', 'La Aviación', '2do Anillo', 'Villa Militar'
+  ],
+  'Cotoca': [
+    'Centro', 'Barrio Nuevo', 'Villa Británica'
+  ],
+  'La Guardia': [
+    'Centro', 'Villa España', 'Los Álamos'
+  ],
+  'La Paz (Zona Sur / Centro)': [
+    'Zona Sur', 'Calacoto', 'San Miguel', 'Achumani', 'Sopocachi',
+    'Miraflores', 'Cementerio', 'Pacífico', 'Avenida Arce', 'Max Paredes',
+    'Tejada Sorzano', 'Belavista', 'San Jorge', 'San Antonio',
+    'Villa Fátima', 'Alto Obrajes', 'Obrajes', 'Kiliani', 'Chasquipampa',
+    'Villa Adela', 'Irpavi', 'San Calixto', 'Pampalata', 'Cota Cota'
+  ],
+  'El Alto': [
+    'Centro', 'Ciudad Satélite', 'Villa Esperanza', 'Alto San Pedro',
+    '20 de Octubre', 'Senkata', 'Llojeta', 'Batallón Chacaltaya'
+  ],
+  'Achumani': [
+    'Achumani Centro', 'San Luis', 'Los Olivos', 'Irpavi Bajo'
+  ],
+  'Sopocachi': [
+    'Sopocachi Centro', 'Sopocachi Bajo', 'Tirito', 'San Jorge'
+  ],
+  'Miraflores': [
+    'Miraflores Centro', 'Alto Miraflores', 'Palmera'
+  ],
+  'Cochabamba': [
+    'Centro', 'Av. América', 'Av. Heroínas', 'Quillacollo Centro',
+    'San Sebastián', 'Calama', 'Emilio Vargas', 'Sacsayhuamán',
+    'Villa Traditional', 'La Florida', 'Torre Paramount', 'Av. Blanco Galindo',
+    'Cala Cala', 'Capellán Pascual', 'Cotahuma', 'Bajo Tejar',
+    'Tunari', 'Las Indias', 'Santiago de Huari', 'Villa San Isidro'
+  ],
+  'Quillacollo': [
+    'Centro', 'Sipe Sipe', 'Villa Catalina', 'Tupuraya'
+  ],
+  'Sacaba': [
+    'Centro', 'Punata Baja', 'Villa Moscú'
+  ],
+  'Tiquipaya': [
+    'Centro', 'San Lorenzo', 'Villa San Martín'
+  ],
+  'Tarija Capital': [
+    'Centro', 'San José del Carmen', 'Urizar Anzualdo', 'Las Palmas',
+    'Villa Moderna', 'Güemes', 'La Plata', 'Sucre'
+  ],
+  'Yacuiba': [
+    'Centro', 'Pampa del Indio', 'Yunchará'
+  ],
+  'Bermejo': [
+    'Centro', 'Moisés Navaje'
+  ],
+  'Sucre Capital': [
+    'Centro', 'Peña Colorado', 'Villa Azurduy', 'Chuquisaca', 'Los Cedros'
+  ],
+  'Monteagudo': [
+    'Centro'
+  ],
+  'Oruro Capital': [
+    'Centro', 'Villa Copacabana', 'San José de Chasquipampa'
+  ],
+  'Challapata': [
+    'Centro'
+  ],
+  'Potosí Capital': [
+    'Centro', 'San Clemente', 'Av. Circunvalación'
+  ],
+  'Villazón': [
+    'Centro'
+  ],
+  'Uyuni': [
+    'Centro'
+  ],
+  'Trinidad': [
+    'Centro', 'Lomerío', 'Barrio Litoral', 'Las Palmas', 'Santa Mónica'
+  ],
+  'Riberalta': [
+    'Centro', 'Barrio 26 de Diciembre'
+  ],
+  'Guayaramerín': [
+    'Centro'
+  ],
+  'Cobija': [
+    'Centro', 'Villacos', 'Las Palmas'
+  ],
+};
+
 export const FAQS = [
   {
     question: "¿Qué garantía tienen los muebles y sofás Sealy?",

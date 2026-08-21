@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { CONFIG } from '../config';
-import { BOLIVIA_DEPARTMENTS, SHOWROOMS } from '../data/showrooms';
+import { BOLIVIA_DEPARTMENTS, SHOWROOMS, ZONES_BY_CITY } from '../data/showrooms';
 import Header from '../components/Header/Header';
 import Footer from '../components/Footer/Footer';
 import {
@@ -60,7 +60,13 @@ export default function CheckoutPage() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'city') {
+        updated.zone = '';
+      }
+      return updated;
+    });
   };
 
   const subtotal = cartTotal;
@@ -229,8 +235,25 @@ export default function CheckoutPage() {
                 <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="form-input" placeholder="Av. Principal #123, Zona Equipetrol" required />
               </div>
               <div>
+                <label className="form-label">Ciudad *</label>
+                <select name="city" value={formData.city} onChange={handleInputChange} className="form-input" required>
+                  {BOLIVIA_DEPARTMENTS.map(dept => (
+                    <optgroup key={dept.id} label={dept.name}>
+                      {dept.cities.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="form-label">Barrio / Zona</label>
-                <input type="text" name="zone" value={formData.zone} onChange={handleInputChange} className="form-input" />
+                <select name="zone" value={formData.zone} onChange={handleInputChange} className="form-input">
+                  <option value="">Selecciona una zona</option>
+                  {(ZONES_BY_CITY[formData.city] || []).map(z => (
+                    <option key={z} value={z}>{z}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="form-label">Referencia</label>
