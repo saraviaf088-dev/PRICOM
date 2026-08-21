@@ -147,7 +147,7 @@ const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, 
   </form>
 ));
 
-export default function AdminModal() {
+export default function AdminModal({ fullPage = false }) {
   const { 
     activeModal, setActiveModal, 
     products, adminAddProduct, adminUpdateProduct, adminDeleteProduct, 
@@ -207,7 +207,7 @@ export default function AdminModal() {
     }
   }, [isAdminAuth, activeModal, loadDashboardData]);
 
-  if (activeModal !== 'admin') return null;
+  if (!fullPage && activeModal !== 'admin') return null;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -307,18 +307,19 @@ export default function AdminModal() {
 
   // ── Login Screen ──
   if (!isAdminAuth) {
-    return (
-      <div className="modal-overlay" onClick={() => setActiveModal(null)} role="dialog" aria-modal="true" aria-label="Acceso administrador">
-        <div className="modal-container" style={{ maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
-          <div className="drawer-header" style={{ backgroundColor: 'var(--color-azul-oscuro)', color: '#fff' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <Lock size={22} color="var(--color-celeste)" />
-              <h3 style={{ fontSize: '1.25rem', color: '#fff' }}>Acceso Administrador</h3>
-            </div>
+    const loginContent = (
+      <div style={{ maxWidth: '420px', margin: fullPage ? '4rem auto' : undefined }}>
+        <div className="drawer-header" style={{ backgroundColor: 'var(--color-azul-oscuro)', color: '#fff', borderRadius: fullPage ? 'var(--radius-md) var(--radius-md) 0 0' : undefined }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Lock size={22} color="var(--color-celeste)" />
+            <h3 style={{ fontSize: '1.25rem', color: '#fff' }}>Acceso Administrador</h3>
+          </div>
+          {!fullPage && (
             <button onClick={() => setActiveModal(null)} style={{ color: '#fff' }}>
               <X size={20} />
             </button>
-          </div>
+          )}
+        </div>
 
           <form onSubmit={handleLogin} style={{ padding: '2rem' }}>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginBottom: '1.5rem', textAlign: 'center' }}>
