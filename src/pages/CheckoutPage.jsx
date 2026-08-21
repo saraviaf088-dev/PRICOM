@@ -8,7 +8,7 @@ import Footer from '../components/Footer/Footer';
 import {
   Check, ShieldCheck, Truck, CreditCard, Smartphone, Building,
   MessageCircle, CheckCircle2, User, Phone, Mail, MapPin, Lock,
-  Package, ChevronDown, ChevronUp, AlertCircle, FileText
+  Package, ChevronDown, ChevronUp, AlertCircle, FileText, X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -43,6 +43,13 @@ export default function CheckoutPage() {
   const [orderConfirmed, setOrderConfirmed] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [expandedSummary, setExpandedSummary] = useState(true);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [cardData, setCardData] = useState({
+    holderName: '',
+    cardNumber: '',
+    expiry: '',
+    cvv: ''
+  });
 
   if (cart.length === 0 && !orderConfirmed) {
     return (
