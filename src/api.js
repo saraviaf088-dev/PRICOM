@@ -490,3 +490,58 @@ export const promotersAPI = {
     return { message: 'Solicitud eliminada' };
   },
 };
+
+// ==================== NEWSLETTER ====================
+
+export const newsletterAPI = {
+  subscribe: async (email) => {
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      try {
+        return await request('/newsletter', {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+      } catch (err) {
+        // Backend failed, fall through to client-side
+      }
+    }
+    const subscriber = {
+      id: `nl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      email: email.toLowerCase(),
+      createdAt: new Date().toISOString(),
+    };
+    const stored = JSON.parse(localStorage.getItem('pricom_newsletter') || '[]');
+    if (stored.find(s => s.email === email.toLowerCase())) {
+      return { message: 'Ya estás suscrito' };
+    }
+    stored.push(subscriber);
+    localStorage.setItem('pricom_newsletter', JSON.stringify(stored));
+    return { message: 'Suscripción exitosa', subscriber };
+  },
+  getAll: async () => {
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      try {
+        return await request('/newsletter');
+      } catch (err) {
+        // Fall through to client-side
+      }
+    }
+    return JSON.parse(localStorage.getItem('pricom_newsletter') || '[]');
+  },
+  delete: async (id) => {
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      try {
+        return await request(`/newsletter/${id}`, { method: 'DELETE' });
+      } catch (err) {
+        // Fall through to client-side
+      }
+    }
+    const stored = JSON.parse(localStorage.getItem('pricom_newsletter') || '[]');
+    const filtered = stored.filter(s => s.id !== id);
+    localStorage.setItem('pricom_newsletter', JSON.stringify(filtered));
+    return { message: 'Suscriptor eliminado' };
+  },
+};

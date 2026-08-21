@@ -1100,6 +1100,40 @@ app.delete('/api/promoters/:id', authMiddleware, async (req, res) => {
   res.json({ message: 'Solicitud eliminada' });
 });
 
+// ═══════════════════════════════════════════
+// NEWSLETTER
+// ═══════════════════════════════════════════
+
+app.post('/api/newsletter', async (req, res) => {
+  const { email } = req.body;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Email válido es requerido' });
+  }
+  const subscribers = await readCollection('newsletter');
+  if (subscribers.find(s => s.email.toLowerCase() === email.toLowerCase())) {
+    return res.json({ message: 'Ya estás suscrito' });
+  }
+  const subscriber = {
+    id: `nl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    email: email.toLowerCase(),
+    createdAt: new Date().toISOString(),
+  };
+  await addToCollection('newsletter', subscriber);
+  res.json({ message: 'Suscripción exitosa', subscriber });
+});
+
+app.get('/api/newsletter', authMiddleware, async (req, res) => {
+  const subscribers = await readCollection('newsletter');
+  res.json(subscribers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+});
+
+app.delete('/api/newsletter/:id', authMiddleware, async (req, res) => {
+  let subscribers = await readCollection('newsletter');
+  subscribers = subscribers.filter(s => s.id !== req.params.id);
+  await writeCollection('newsletter', subscribers);
+  res.json({ message: 'Suscriptor eliminado' });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 PRICOM Server running on http://localhost:${PORT}`);

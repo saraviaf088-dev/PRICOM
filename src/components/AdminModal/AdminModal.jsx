@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
+import { newsletterAPI } from '../../api';
 import { 
   LayoutDashboard, Plus, Trash2, Edit3, Save, X, DollarSign, Package, 
   MessageCircle, BarChart3, Lock, LogOut, Eye, EyeOff, ShoppingBag, 
   Clock, CheckCircle, Truck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Image,
-  FileDown, Users
+  FileDown, Users, Mail
 } from 'lucide-react';
 
 const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, isSaving }) => (
@@ -169,6 +170,7 @@ export default function AdminModal({ fullPage = false }) {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [orderFilter, setOrderFilter] = useState('all');
   const [isSaving, setIsSaving] = useState(false);
+  const [newsletterSubscribers, setNewsletterSubscribers] = useState([]);
 
   const [newProd, setNewProd] = useState({
     id: '',
@@ -200,6 +202,8 @@ export default function AdminModal({ fullPage = false }) {
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
+    const subscribers = await newsletterAPI.getAll();
+    setNewsletterSubscribers(subscribers);
     await Promise.all([fetchAdminStats(), fetchAdminOrders(), fetchPromoterApplications()]);
     setLoading(false);
   }, [fetchAdminStats, fetchAdminOrders, fetchPromoterApplications]);
@@ -479,6 +483,7 @@ export default function AdminModal({ fullPage = false }) {
             { id: 'orders', label: 'Pedidos', icon: ShoppingBag },
             { id: 'products', label: 'Productos', icon: Package },
             { id: 'promoters', label: 'Promotores', icon: Users },
+            { id: 'newsletter', label: 'Newsletter', icon: Mail },
           ].map(tab => (
             <button
               key={tab.id}
@@ -994,6 +999,76 @@ export default function AdminModal({ fullPage = false }) {
                               className="btn btn-outline btn-sm"
                               style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
                               title="Eliminar solicitud"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Newsletter Tab */}
+        {activeTab === 'newsletter' && (
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h4 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Mail size={20} />
+                Suscriptores al Newsletter ({newsletterSubscribers.length})
+              </h4>
+              <button onClick={loadDashboardData} className="btn btn-outline btn-sm">
+                <RefreshCw size={14} />
+                Actualizar
+              </button>
+            </div>
+
+            {newsletterSubscribers.length === 0 ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <Mail size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                <p>No hay suscriptores al newsletter</p>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="comparator-table">
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Fecha de Suscripción</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {newsletterSubscribers.map(s => (
+                      <tr key={s.id}>
+                        <td style={{ fontWeight: '600' }}>{s.email}</td>
+                        <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                          {new Date(s.createdAt).toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            <button
+                              onClick={() => {
+                                window.open(`mailto:${s.email}?subject=Ofertas exclusivas PRICOM&body=Hola, te compartimos nuestras ofertas exclusivas de PRICOM y Sealy.`, '_blank');
+                              }}
+                              className="btn btn-outline btn-sm"
+                              title="Enviar email"
+                            >
+                              <Mail size={14} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`¿Eliminar al suscriptor ${s.email}?`)) {
+                                  newsletterAPI.delete(s.id).then(() => loadDashboardData());
+                                }
+                              }}
+                              className="btn btn-outline btn-sm"
+                              style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
+                              title="Eliminar suscriptor"
                             >
                               <Trash2 size={14} />
                             </button>

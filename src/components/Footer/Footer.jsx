@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { CONFIG } from '../../config';
 import { SHOWROOMS } from '../../data/showrooms';
+import { newsletterAPI } from '../../api';
 import {
   MapPin, Phone, Mail, MessageCircle, Send, ShieldCheck,
   Truck, CreditCard, Lock, Smartphone, Settings
@@ -12,12 +13,20 @@ export default function Footer() {
   const navigate = useNavigate();
   const { setFilters, openLegalModal, showToast } = useApp();
   const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribing, setSubscribing] = useState(false);
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-    if (newsletterEmail) {
-      showToast('¡Suscripción Exitosa!', 'Recibirás las promociones exclusivas de PRICOM y Sealy.', 'success');
+    if (!newsletterEmail || subscribing) return;
+    setSubscribing(true);
+    try {
+      const result = await newsletterAPI.subscribe(newsletterEmail);
+      showToast('¡Suscripción Exitosa!', result.message || 'Recibirás las promociones exclusivas de PRICOM y Sealy.', 'success');
       setNewsletterEmail('');
+    } catch (err) {
+      showToast('Error', 'No se pudo completar la suscripción. Intenta de nuevo.', 'warning');
+    } finally {
+      setSubscribing(false);
     }
   };
 
@@ -109,8 +118,8 @@ export default function Footer() {
                 style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#fff', borderColor: 'rgba(255, 255, 255, 0.2)', fontSize: '0.85rem' }}
                 required
               />
-              <button type="submit" className="btn btn-primary btn-sm">
-                <Send size={15} />
+              <button type="submit" className="btn btn-primary btn-sm" disabled={subscribing} style={{ opacity: subscribing ? 0.7 : 1 }}>
+                {subscribing ? <div className="spinner" style={{ width: '15px', height: '15px' }} /> : <Send size={15} />}
               </button>
             </form>
 
