@@ -418,21 +418,75 @@ export const usersAPI = {
 
 export const promotersAPI = {
   submit: async (fullName, city, phone) => {
-    return await request('/promoters', {
-      method: 'POST',
-      body: JSON.stringify({ fullName, city, phone }),
-    });
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      try {
+        return await request('/promoters', {
+          method: 'POST',
+          body: JSON.stringify({ fullName, city, phone }),
+        });
+      } catch (err) {
+        // Backend failed, fall through to client-side
+      }
+    }
+    // Client-side fallback: save to localStorage
+    const application = {
+      id: `promo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      fullName,
+      city,
+      phone,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    const stored = JSON.parse(localStorage.getItem('pricom_promoters') || '[]');
+    stored.push(application);
+    localStorage.setItem('pricom_promoters', JSON.stringify(stored));
+    return { message: 'Solicitud enviada correctamente', application };
   },
   getAll: async () => {
-    return await request('/promoters');
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      try {
+        return await request('/promoters');
+      } catch (err) {
+        // Fall through to client-side
+      }
+    }
+    return JSON.parse(localStorage.getItem('pricom_promoters') || '[]');
   },
   update: async (id, data) => {
-    return await request(`/promoters/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      try {
+        return await request(`/promoters/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(data),
+        });
+      } catch (err) {
+        // Fall through to client-side
+      }
+    }
+    const stored = JSON.parse(localStorage.getItem('pricom_promoters') || '[]');
+    const idx = stored.findIndex(p => p.id === id);
+    if (idx !== -1) {
+      stored[idx] = { ...stored[idx], ...data, updatedAt: new Date().toISOString() };
+      localStorage.setItem('pricom_promoters', JSON.stringify(stored));
+      return stored[idx];
+    }
+    throw new Error('Solicitud no encontrada');
   },
   delete: async (id) => {
-    return await request(`/promoters/${id}`, { method: 'DELETE' });
+    const isBackendUp = await checkBackend();
+    if (isBackendUp) {
+      try {
+        return await request(`/promoters/${id}`, { method: 'DELETE' });
+      } catch (err) {
+        // Fall through to client-side
+      }
+    }
+    const stored = JSON.parse(localStorage.getItem('pricom_promoters') || '[]');
+    const filtered = stored.filter(p => p.id !== id);
+    localStorage.setItem('pricom_promoters', JSON.stringify(filtered));
+    return { message: 'Solicitud eliminada' };
   },
 };
