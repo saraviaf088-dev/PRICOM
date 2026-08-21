@@ -1161,6 +1161,10 @@ app.post('/api/newsletter/send', authMiddleware, async (req, res) => {
     to: emails.join(','),
     subject,
     html: `
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="utf-8"><title>${subject}</title></head>
+      <body style="margin:0; padding:0; background:#f4f4f4;">
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #051063, #00B4D8); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
           <h1 style="color: white; margin: 0; font-size: 24px;">PRICOM Bolivia</h1>
@@ -1173,6 +1177,8 @@ app.post('/api/newsletter/send', authMiddleware, async (req, res) => {
           <p style="margin: 5px 0 0;">Si no deseas recibir estos correos, responde con "CANCELAR".</p>
         </div>
       </div>
+      </body>
+      </html>
     `,
   };
   try {
