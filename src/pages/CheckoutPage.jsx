@@ -85,13 +85,38 @@ export default function CheckoutPage() {
   const handleConfirmOrder = async () => {
     setIsProcessing(true);
     try {
-      const order = createOrder({
-        ...formData,
-        items: cart,
-        total,
+      const orderData = {
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        customerNIT: formData.nit,
+        deliveryType: formData.deliveryType,
+        department: formData.department,
+        city: formData.city,
+        zone: formData.zone,
+        address: formData.address,
+        reference: formData.reference,
+        selectedShowroom: formData.selectedShowroom,
+        paymentMethod: formData.paymentMethod,
         subtotal,
-        deliveryCost
-      });
+        shippingCost: deliveryCost,
+        total,
+        items: cart.map(item => ({
+          product: {
+            id: item.product?.id || item.id,
+            name: item.product?.name || item.name,
+            brand: item.product?.brand || item.brand,
+            price: item.product?.price || item.price,
+            images: item.product?.images || item.images,
+            category: item.product?.category || item.category,
+          },
+          quantity: item.quantity,
+          selectedColor: item.selectedColor,
+          selectedMaterial: item.selectedMaterial,
+        })),
+      };
+
+      const order = await createOrder(orderData);
       setOrderConfirmed(order);
       setCheckoutStep(5);
       confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
@@ -107,9 +132,20 @@ export default function CheckoutPage() {
     if (!orderConfirmed) return;
     setIsProcessing(true);
     try {
-      await processPayment(orderConfirmed.id, formData.paymentMethod);
+      const paymentResult = await processPayment({
+        orderId: orderConfirmed.orderId || orderConfirmed.id,
+        paymentMethod: formData.paymentMethod,
+        cardData: formData.paymentMethod === 'card' ? { number: '4242424242424242', installments: 1 } : null,
+        tigoPhone: formData.paymentMethod === 'tigo' ? formData.phone : null,
+      });
       clearCart();
-      showToast('Pago Registrado', 'Tu pago ha sido procesado correctamente.', 'success');
+      if (paymentResult && paymentResult.success !== false) {
+        showToast('Pago Registrado', 'Tu pago ha sido procesado correctamente.', 'success');
+        navigate('/');
+      } else {
+        showToast('Pago Registrado', 'Tu pedido fue registrado. Puedes realizar el pago posteriormente.', 'success');
+        navigate('/');
+      }
     } catch (err) {
       showToast('Error de Pago', 'Hubo un problema al procesar el pago.', 'error');
     } finally {
@@ -277,13 +313,13 @@ export default function CheckoutPage() {
           <div style={{ padding: '2rem', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
             <CheckCircle2 size={64} color="var(--color-celeste)" style={{ marginBottom: '1rem' }} />
             <h3 style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>¡Pedido Confirmado!</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Tu pedido <strong>#{orderConfirmed.id?.slice(0, 8)}</strong> ha sido registrado.</p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Tu pedido <strong>#{orderConfirmed.orderNumber || orderConfirmed.orderId?.slice(0, 8)}</strong> ha sido registrado.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '300px', margin: '0 auto 1.5rem' }}>
               <button className="btn btn-primary" onClick={handlePayment} disabled={isProcessing} style={{ width: '100%' }}>
                 {isProcessing ? 'Procesando...' : 'Completar Pago'}
               </button>
               <a
-                href={`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola PRICOM, acabo de realizar el pedido #${orderConfirmed.id?.slice(0, 8)}. Necesito asistencia con el pago.`)}`}
+                href={`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola PRICOM, acabo de realizar el pedido #${orderConfirmed.orderNumber || orderConfirmed.orderId?.slice(0, 8)}. Necesito asistencia con el pago.`)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-whatsapp"
