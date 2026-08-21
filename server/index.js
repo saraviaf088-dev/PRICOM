@@ -1055,6 +1055,51 @@ app.post('/api/sync/products', async (req, res) => {
   res.json({ message: `${products.length} productos sincronizados` });
 });
 
+// ═══════════════════════════════════════════
+// PROMOTER APPLICATIONS
+// ═══════════════════════════════════════════
+
+app.post('/api/promoters', async (req, res) => {
+  const { fullName, city, phone } = req.body;
+  if (!fullName || !city || !phone) {
+    return res.status(400).json({ error: 'Nombre, ciudad y celular son requeridos' });
+  }
+  const application = {
+    id: `promo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    fullName,
+    city,
+    phone,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+  };
+  await addToCollection('promoters', application);
+  res.json({ message: 'Solicitud enviada correctamente', application });
+});
+
+app.get('/api/promoters', authMiddleware, async (req, res) => {
+  const applications = await readCollection('promoters');
+  res.json(applications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+});
+
+app.put('/api/promoters/:id', authMiddleware, async (req, res) => {
+  const { status, notes } = req.body;
+  const applications = await readCollection('promoters');
+  const app = applications.find(a => a.id === req.params.id);
+  if (!app) return res.status(404).json({ error: 'Solicitud no encontrada' });
+  if (status) app.status = status;
+  if (notes !== undefined) app.notes = notes;
+  app.updatedAt = new Date().toISOString();
+  await writeCollection('promoters', applications);
+  res.json(app);
+});
+
+app.delete('/api/promoters/:id', authMiddleware, async (req, res) => {
+  let applications = await readCollection('promoters');
+  applications = applications.filter(a => a.id !== req.params.id);
+  await writeCollection('promoters', applications);
+  res.json({ message: 'Solicitud eliminada' });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 PRICOM Server running on http://localhost:${PORT}`);

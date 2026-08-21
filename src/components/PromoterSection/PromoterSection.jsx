@@ -4,25 +4,35 @@ import {
   Send, Phone, MapPin, User, ArrowRight, Star, Shield
 } from 'lucide-react';
 import { BOLIVIA_DEPARTMENTS } from '../../data/showrooms';
+import { useApp } from '../../context/AppContext';
 
 export default function PromoterSection() {
+  const { submitPromoterApplication, showToast } = useApp();
   const [formData, setFormData] = useState({
     fullName: '',
     city: '',
     phone: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.fullName && formData.city && formData.phone) {
+    if (!formData.fullName || !formData.city || !formData.phone) return;
+    setSubmitting(true);
+    try {
+      await submitPromoterApplication(formData.fullName, formData.city, formData.phone);
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 5000);
       setFormData({ fullName: '', city: '', phone: '' });
+    } catch (err) {
+      showToast('Error', 'No se pudo enviar la solicitud. Intenta de nuevo.', 'warning');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -288,10 +298,11 @@ export default function PromoterSection() {
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.85rem' }}
+                  disabled={submitting}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0.85rem', opacity: submitting ? 0.7 : 1 }}
                 >
-                  <Send size={16} />
-                  Enviar Solicitud
+                  <Send size={16} className={submitting ? 'spin' : ''} />
+                  {submitting ? 'Enviando...' : 'Enviar Solicitud'}
                 </button>
               </form>
             )}

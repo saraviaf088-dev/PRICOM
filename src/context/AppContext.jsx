@@ -3,7 +3,7 @@ import { PRODUCTS as initialProducts } from '../data/products';
 import { ARTICLES } from '../data/articles';
 import { CONFIG } from '../config';
 import { storage } from '../storage';
-import { authAPI, ordersAPI, productsAPI, paymentsAPI, statsAPI, usersAPI } from '../api';
+import { authAPI, ordersAPI, productsAPI, paymentsAPI, statsAPI, usersAPI, promotersAPI } from '../api';
 import confetti from 'canvas-confetti';
 
 const AppContext = createContext();
@@ -487,6 +487,55 @@ export function AppProvider({ children }) {
     }
   }, []);
 
+  // ═══════════════════════════════════════════
+  // PROMOTER APPLICATIONS
+  // ═══════════════════════════════════════════
+  const [promoterApplications, setPromoterApplications] = useState([]);
+
+  const submitPromoterApplication = useCallback(async (fullName, city, phone) => {
+    try {
+      await promotersAPI.submit(fullName, city, phone);
+      return true;
+    } catch (err) {
+      console.error('Error submitting promoter application:', err);
+      throw err;
+    }
+  }, []);
+
+  const fetchPromoterApplications = useCallback(async () => {
+    try {
+      const data = await promotersAPI.getAll();
+      setPromoterApplications(data);
+      return data;
+    } catch (err) {
+      console.error('Error fetching promoters:', err);
+      return [];
+    }
+  }, []);
+
+  const updatePromoterStatus = useCallback(async (id, status, notes) => {
+    try {
+      const updated = await promotersAPI.update(id, { status, notes });
+      setPromoterApplications(prev => prev.map(p => p.id === id ? { ...p, ...updated } : p));
+      showToast('Actualizado', 'Estado de solicitud actualizado.', 'success');
+      return updated;
+    } catch (err) {
+      showToast('Error', err.message || 'No se pudo actualizar', 'warning');
+      throw err;
+    }
+  }, [showToast]);
+
+  const deletePromoterApplication = useCallback(async (id) => {
+    try {
+      await promotersAPI.delete(id);
+      setPromoterApplications(prev => prev.filter(p => p.id !== id));
+      showToast('Eliminado', 'Solicitud eliminada correctamente.', 'success');
+    } catch (err) {
+      showToast('Error', err.message || 'No se pudo eliminar', 'warning');
+      throw err;
+    }
+  }, [showToast]);
+
   const createOrder = useCallback(async (orderData) => {
     try {
       const result = await ordersAPI.create(orderData);
@@ -640,6 +689,11 @@ export function AppProvider({ children }) {
     createOrder,
     processPayment,
     syncProductsToServer,
+    submitPromoterApplication,
+    promoterApplications,
+    fetchPromoterApplications,
+    updatePromoterStatus,
+    deletePromoterApplication,
   }), [
     products, cart, wishlist, comparator, theme,
     searchQuery, searchHistory, filters, activeModal,
@@ -659,6 +713,8 @@ export function AppProvider({ children }) {
     fetchAdminStats, fetchAdminOrders, updateOrderStatus,
     adminUpdateOrder, adminDeleteOrder, monthlySales, fetchMonthlySales,
     createOrder, processPayment, syncProductsToServer,
+    submitPromoterApplication, promoterApplications, fetchPromoterApplications,
+    updatePromoterStatus, deletePromoterApplication,
   ]);
 
   return (

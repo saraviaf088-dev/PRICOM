@@ -413,3 +413,26 @@ export const usersAPI = {
   forgotPassword: (email) => userRequest('/users/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
   resetPassword: (token, newPassword) => userRequest('/users/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }) }),
 };
+
+// ==================== PROMOTERS ====================
+
+export const promotersAPI = {
+  submit: async (fullName, city, phone) => {
+    return await request('/promoters', {
+      method: 'POST',
+      body: JSON.stringify({ fullName, city, phone }),
+    });
+  },
+  getAll: async () => {
+    return await request('/promoters');
+  },
+  update: async (id, data) => {
+    return await request(`/promoters/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  delete: async (id) => {
+    return await request(`/promoters/${id}`, { method: 'DELETE' });
+  },
+};

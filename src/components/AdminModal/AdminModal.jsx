@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Plus, Trash2, Edit3, Save, X, DollarSign, Package, 
   MessageCircle, BarChart3, Lock, LogOut, Eye, EyeOff, ShoppingBag, 
   Clock, CheckCircle, Truck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Image,
-  FileDown
+  FileDown, Users
 } from 'lucide-react';
 
 const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, isSaving }) => (
@@ -155,6 +155,7 @@ export default function AdminModal({ fullPage = false }) {
     isAdminAuth, adminLogin, adminLogout,
     adminStats, adminOrders, fetchAdminStats, fetchAdminOrders, updateOrderStatus,
     adminDeleteOrder,
+    promoterApplications, fetchPromoterApplications, updatePromoterStatus, deletePromoterApplication,
     syncProductsToServer,
     showToast 
   } = useApp();
@@ -199,9 +200,9 @@ export default function AdminModal({ fullPage = false }) {
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
-    await Promise.all([fetchAdminStats(), fetchAdminOrders()]);
+    await Promise.all([fetchAdminStats(), fetchAdminOrders(), fetchPromoterApplications()]);
     setLoading(false);
-  }, [fetchAdminStats, fetchAdminOrders]);
+  }, [fetchAdminStats, fetchAdminOrders, fetchPromoterApplications]);
 
   useEffect(() => {
     if (isAdminAuth && activeModal === 'admin') {
@@ -477,6 +478,7 @@ export default function AdminModal({ fullPage = false }) {
             { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
             { id: 'orders', label: 'Pedidos', icon: ShoppingBag },
             { id: 'products', label: 'Productos', icon: Package },
+            { id: 'promoters', label: 'Promotores', icon: Users },
           ].map(tab => (
             <button
               key={tab.id}
@@ -902,6 +904,107 @@ export default function AdminModal({ fullPage = false }) {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Promoters Tab */}
+        {activeTab === 'promoters' && (
+          <div style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h4 style={{ fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Users size={20} />
+                Solicitudes de Promotores ({promoterApplications.length})
+              </h4>
+              <button onClick={loadDashboardData} className="btn btn-outline btn-sm">
+                <RefreshCw size={14} />
+                Actualizar
+              </button>
+            </div>
+
+            {promoterApplications.length === 0 ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                <p>No hay solicitudes de promotores</p>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="comparator-table">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Ciudad</th>
+                      <th>Celular</th>
+                      <th>Estado</th>
+                      <th>Fecha</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {promoterApplications.map(p => (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: '700' }}>{p.fullName}</td>
+                        <td>{p.city}</td>
+                        <td>
+                          <a href={`https://wa.me/591${p.phone}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-celeste)', textDecoration: 'none' }}>
+                            {p.phone}
+                          </a>
+                        </td>
+                        <td>
+                          <select
+                            value={p.status}
+                            onChange={(e) => updatePromoterStatus(p.id, e.target.value)}
+                            style={{
+                              padding: '0.3rem 0.5rem',
+                              borderRadius: 'var(--radius-sm)',
+                              border: '1px solid var(--border-color)',
+                              fontSize: '0.78rem',
+                              fontWeight: '600',
+                              backgroundColor: 'var(--bg-surface)',
+                              color: p.status === 'approved' ? 'var(--color-success)' : p.status === 'rejected' ? 'var(--color-danger)' : 'var(--color-warning)',
+                            }}
+                          >
+                            <option value="pending">Pendiente</option>
+                            <option value="contacted">Contactado</option>
+                            <option value="interview">Entrevista</option>
+                            <option value="approved">Aprobado</option>
+                            <option value="rejected">Rechazado</option>
+                          </select>
+                        </td>
+                        <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                          {new Date(p.createdAt).toLocaleDateString('es-BO')}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            <button
+                              onClick={() => {
+                                const msg = `Hola ${p.fullName}, somos de PRICOM. Hemos recibido tu solicitud para ser promotor. ¿Cuándo podrías asistir a una entrevista?`;
+                                window.open(`https://wa.me/591${p.phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                              }}
+                              className="btn btn-outline btn-sm"
+                              title="Contactar por WhatsApp"
+                            >
+                              <MessageCircle size={14} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`¿Eliminar la solicitud de ${p.fullName}?`)) {
+                                  deletePromoterApplication(p.id);
+                                }
+                              }}
+                              className="btn btn-outline btn-sm"
+                              style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
+                              title="Eliminar solicitud"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
