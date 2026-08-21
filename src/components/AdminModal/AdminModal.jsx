@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Plus, Trash2, Edit3, Save, X, DollarSign, Package, 
   MessageCircle, BarChart3, Lock, LogOut, Eye, EyeOff, ShoppingBag, 
   Clock, CheckCircle, Truck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Image,
-  FileDown, Users, Mail
+  FileDown, Users, Mail, Send
 } from 'lucide-react';
 
 const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, isSaving }) => (
