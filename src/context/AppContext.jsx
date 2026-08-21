@@ -454,14 +454,23 @@ export function AppProvider({ children }) {
   const adminAddProduct = useCallback(async (newProduct) => {
     try {
       const created = await productsAPI.create(newProduct);
-      setProducts(prev => [created, ...prev]);
-      // Auto-sync to server
-      const allProducts = [created];
-      productsAPI.sync(allProducts).catch(() => {});
-      showToast('Producto Creado', `${created.name} fue añadido al catálogo.`, 'success');
-      return created;
+      let finalProduct = created;
+      setProducts(prev => {
+        const next = [created, ...prev];
+        productsAPI.sync(next).catch(() => {});
+        return next;
+      });
+      if (!created || !created.name) {
+        finalProduct = newProduct;
+      }
+      showToast('Producto Creado', `${finalProduct.name} fue añadido al catálogo.`, 'success');
+      return finalProduct;
     } catch (err) {
-      setProducts(prev => [newProduct, ...prev]);
+      setProducts(prev => {
+        const next = [newProduct, ...prev];
+        productsAPI.sync(next).catch(() => {});
+        return next;
+      });
       showToast('Producto Creado', `${newProduct.name} fue añadido (modo local).`, 'success');
       return newProduct;
     }
@@ -475,8 +484,6 @@ export function AppProvider({ children }) {
     }
     setProducts(prev => {
       const next = prev.map(p => (p.id === updatedProduct.id ? updatedProduct : p));
-      // Auto-sync full list to server
-      productsAPI.sync(next).catch(() => {});
       return next;
     });
     showToast('Producto Actualizado', `${updatedProduct.name} fue modificado exitosamente.`, 'success');
@@ -490,8 +497,6 @@ export function AppProvider({ children }) {
     }
     setProducts(prev => {
       const next = prev.filter(p => p.id !== productId);
-      // Auto-sync full list to server
-      productsAPI.sync(next).catch(() => {});
       return next;
     });
     showToast('Producto Eliminado', 'El producto fue dado de baja del catálogo.', 'info');

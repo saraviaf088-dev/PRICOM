@@ -6,6 +6,145 @@ import {
   Clock, CheckCircle, Truck, AlertTriangle, RefreshCw, ChevronDown, ChevronUp, Image
 } from 'lucide-react';
 
+const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, isSaving }) => (
+  <form onSubmit={onSubmit} style={{ padding: '1.5rem', margin: '0 1.5rem 1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--color-celeste)', maxHeight: '70vh', overflowY: 'auto' }}>
+    <h5 style={{ fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <Package size={18} />
+      {title}
+    </h5>
+    
+    <div style={{ marginBottom: '1rem' }}>
+      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Información Básica</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-group">
+          <label className="form-label">Nombre *</label>
+          <input type="text" className="form-input" required value={product.name} onChange={(e) => onChange({ ...product, name: e.target.value })} placeholder="Ej: Sealy Monterey" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Marca</label>
+          <input type="text" className="form-input" value={product.brand} onChange={(e) => onChange({ ...product, brand: e.target.value })} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Categoría</label>
+          <select className="form-select" value={product.category} onChange={(e) => onChange({ ...product, category: e.target.value })}>
+            <option value="Sofás Cama">Sofás Cama</option>
+            <option value="Reclinables">Reclinables</option>
+            <option value="Sofás">Sofás</option>
+            <option value="Juegos de Sala">Juegos de Sala</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Subcategoría</label>
+          <input type="text" className="form-input" value={product.subCategory} onChange={(e) => onChange({ ...product, subCategory: e.target.value })} placeholder="Ej: Sofás Cama Queen" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Material</label>
+          <input type="text" className="form-input" value={product.material} onChange={(e) => onChange({ ...product, material: e.target.value })} placeholder="Ej: Microfibra Premium" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Estilo</label>
+          <input type="text" className="form-input" value={product.style} onChange={(e) => onChange({ ...product, style: e.target.value })} placeholder="Ej: Contemporáneo" />
+        </div>
+      </div>
+    </div>
+
+    <div style={{ marginBottom: '1rem' }}>
+      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Precios y Stock</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-group">
+          <label className="form-label">Precio (Bs.) *</label>
+          <input type="number" className="form-input" required value={product.price} onChange={(e) => onChange({ ...product, price: Number(e.target.value) || 0 })} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Precio Original (Bs.)</label>
+          <input type="number" className="form-input" value={product.originalPrice} onChange={(e) => onChange({ ...product, originalPrice: Number(e.target.value) || 0 })} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Descuento (%)</label>
+          <input type="number" className="form-input" value={product.discount} onChange={(e) => onChange({ ...product, discount: Number(e.target.value) || 0 })} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Stock *</label>
+          <input type="number" className="form-input" required value={product.stockCount} onChange={(e) => onChange({ ...product, stockCount: Number(e.target.value) || 0 })} />
+        </div>
+      </div>
+    </div>
+
+    <div style={{ marginBottom: '1rem' }}>
+      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Imagen</div>
+      <div className="form-group">
+        <label className="form-label">URL de la imagen principal</label>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <Image size={16} style={{ color: 'var(--text-muted)' }} />
+          <input type="text" className="form-input" value={product.images?.[0] || ''} onChange={(e) => onChange({ ...product, images: [e.target.value, ...(product.images || []).slice(1)] })} placeholder="/images/RUTA/1.jpg o https://..." style={{ flex: 1 }} />
+        </div>
+        {product.images?.[0] && (
+          <img src={product.images[0]} alt="Preview" style={{ marginTop: '0.5rem', width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border-color)' }} />
+        )}
+      </div>
+    </div>
+
+    <div style={{ marginBottom: '1rem' }}>
+      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Descripciones</div>
+      <div className="form-group">
+        <label className="form-label">Descripción Corta</label>
+        <input type="text" className="form-input" value={product.shortDescription} onChange={(e) => onChange({ ...product, shortDescription: e.target.value })} placeholder="Una línea descripción del producto" />
+      </div>
+      <div className="form-group">
+        <label className="form-label">Descripción Completa</label>
+        <textarea className="form-input" rows={3} value={product.fullDescription} onChange={(e) => onChange({ ...product, fullDescription: e.target.value })} placeholder="Descripción detallada del producto..." style={{ resize: 'vertical' }} />
+      </div>
+    </div>
+
+    <div style={{ marginBottom: '1rem' }}>
+      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Estado y Badges</div>
+      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem' }}>
+          <input type="checkbox" checked={product.isOffer} onChange={(e) => onChange({ ...product, isOffer: e.target.checked })} />
+          En Oferta
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem' }}>
+          <input type="checkbox" checked={product.isNew} onChange={(e) => onChange({ ...product, isNew: e.target.checked })} />
+          Nuevo
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem' }}>
+          <input type="checkbox" checked={product.isFeatured} onChange={(e) => onChange({ ...product, isFeatured: e.target.checked })} />
+          Destacado
+        </label>
+      </div>
+    </div>
+
+    <div style={{ marginBottom: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div className="form-group">
+          <label className="form-label">Garantía</label>
+          <input type="text" className="form-input" value={product.warranty} onChange={(e) => onChange({ ...product, warranty: e.target.value })} placeholder="Ej: 5 Años Oficial" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Disponibilidad</label>
+          <select className="form-select" value={product.availability} onChange={(e) => onChange({ ...product, availability: e.target.value })}>
+            <option value="En Stock">En Stock</option>
+            <option value="Pre-orden">Pre-orden</option>
+            <option value="Agotado">Agotado</option>
+            <option value="Disponible bajo pedido">Disponible bajo pedido</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+      <button type="submit" className="btn btn-primary btn-sm" disabled={isSaving}>
+        <Save size={14} />
+        {isSaving ? 'Guardando...' : title.includes('Crear') ? 'Crear Producto' : 'Guardar Cambios'}
+      </button>
+      <button type="button" className="btn btn-outline btn-sm" onClick={onCancel} disabled={isSaving}>
+        <X size={14} />
+        Cancelar
+      </button>
+    </div>
+  </form>
+));
+
 export default function AdminModal() {
   const { 
     activeModal, setActiveModal, 
@@ -24,6 +163,8 @@ export default function AdminModal() {
   const [loading, setLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [orderFilter, setOrderFilter] = useState('all');
+  const [isSaving, setIsSaving] = useState(false);
+
   const [newProd, setNewProd] = useState({
     id: '',
     name: '',
@@ -52,18 +193,17 @@ export default function AdminModal() {
     locations: ['Santa Cruz', 'La Paz']
   });
 
-  // Fetch data when admin logs in
+  const loadDashboardData = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([fetchAdminStats(), fetchAdminOrders()]);
+    setLoading(false);
+  }, [fetchAdminStats, fetchAdminOrders]);
+
   useEffect(() => {
     if (isAdminAuth && activeModal === 'admin') {
       loadDashboardData();
     }
-  }, [isAdminAuth, activeModal]);
-
-  const loadDashboardData = async () => {
-    setLoading(true);
-    await Promise.all([fetchAdminStats(), fetchAdminOrders()]);
-    setLoading(false);
-  };
+  }, [isAdminAuth, activeModal, loadDashboardData]);
 
   if (activeModal !== 'admin') return null;
 
@@ -75,45 +215,64 @@ export default function AdminModal() {
     }
   };
 
-  const handleCreateSubmit = (e) => {
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    const id = `custom-${Date.now()}`;
-    const slug = newProd.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
-    adminAddProduct({ ...newProd, id, slug });
-    setIsCreating(false);
-    setNewProd({
-      id: '', name: '', brand: 'Sealy', category: 'Sofás Cama', subCategory: 'Sofás Cama Queen',
-      price: 9000, originalPrice: 15000, discount: 40, isOffer: true, isNew: true, isFeatured: false,
-      rating: 5.0, reviewCount: 1, images: ['/images/SEALY-SANTACRUZ-SEAFOAM/1.jpg'],
-      colors: [{ name: 'Estándar', hex: '#888888', active: true }],
-      material: 'Microfibra y Espuma Sealy', style: 'Contemporáneo',
-      shortDescription: 'Sofá de diseño de alta gama con garantía oficial.',
-      fullDescription: 'Descripción completa del modelo.',
-      features: ['Característica principal'],
-      specs: [{ label: 'Marca', value: 'Sealy' }],
-      warranty: '5 Años Oficial', availability: 'En Stock', stockCount: 5,
-      locations: ['Santa Cruz', 'La Paz']
-    });
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const id = `custom-${Date.now()}`;
+      const slug = newProd.name.toLowerCase().replace(/ /g, '-').replace(/[^a-z0-9-]/g, '');
+      const created = await adminAddProduct({ ...newProd, id, slug });
+      if (created) {
+        setIsCreating(false);
+        setNewProd({
+          id: '', name: '', brand: 'Sealy', category: 'Sofás Cama', subCategory: 'Sofás Cama Queen',
+          price: 9000, originalPrice: 15000, discount: 40, isOffer: true, isNew: true, isFeatured: false,
+          rating: 5.0, reviewCount: 1, images: ['/images/SEALY-SANTACRUZ-SEAFOAM/1.jpg'],
+          colors: [{ name: 'Estándar', hex: '#888888', active: true }],
+          material: 'Microfibra y Espuma Sealy', style: 'Contemporáneo',
+          shortDescription: 'Sofá de diseño de alta gama con garantía oficial.',
+          fullDescription: 'Descripción completa del modelo.',
+          features: ['Característica principal'],
+          specs: [{ label: 'Marca', value: 'Sealy' }],
+          warranty: '5 Años Oficial', availability: 'En Stock', stockCount: 5,
+          locations: ['Santa Cruz', 'La Paz']
+        });
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    adminUpdateProduct(editingProduct);
-    setEditingProduct(null);
-    showToast('Producto Actualizado', `${editingProduct.name} fue actualizado.`, 'success');
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const productName = editingProduct.name;
+      await adminUpdateProduct(editingProduct);
+      setEditingProduct(null);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleUpdatePriceStock = (prod, newPrice, newStock) => {
+    const price = Number(newPrice);
+    const stock = Number(newStock);
+    if (isNaN(price) || isNaN(stock)) return;
     adminUpdateProduct({
       ...prod,
-      price: Number(newPrice),
-      stockCount: Number(newStock)
+      price,
+      stockCount: stock
     });
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
-    await updateOrderStatus(orderId, newStatus);
-    await fetchAdminStats();
+    const result = await updateOrderStatus(orderId, newStatus);
+    if (result) {
+      await fetchAdminStats();
+    }
   };
 
   const getStatusColor = (status) => {
@@ -213,152 +372,6 @@ export default function AdminModal() {
       </div>
     );
   }
-
-  // ── Product Form Component ──
-  const ProductForm = ({ product, onChange, onSubmit, onCancel, title }) => (
-    <form onSubmit={onSubmit} style={{ padding: '1.5rem', margin: '0 1.5rem 1.5rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--color-celeste)', maxHeight: '70vh', overflowY: 'auto' }}>
-      <h5 style={{ fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Package size={18} />
-        {title}
-      </h5>
-      
-      {/* Basic Info */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Información Básica</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
-          <div className="form-group">
-            <label className="form-label">Nombre *</label>
-            <input type="text" className="form-input" required value={product.name} onChange={(e) => onChange({ ...product, name: e.target.value })} placeholder="Ej: Sealy Monterey" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Marca</label>
-            <input type="text" className="form-input" value={product.brand} onChange={(e) => onChange({ ...product, brand: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Categoría</label>
-            <select className="form-select" value={product.category} onChange={(e) => onChange({ ...product, category: e.target.value })}>
-              <option value="Sofás Cama">Sofás Cama</option>
-              <option value="Reclinables">Reclinables</option>
-              <option value="Sofás">Sofás</option>
-              <option value="Juegos de Sala">Juegos de Sala</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label className="form-label">Subcategoría</label>
-            <input type="text" className="form-input" value={product.subCategory} onChange={(e) => onChange({ ...product, subCategory: e.target.value })} placeholder="Ej: Sofás Cama Queen" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Material</label>
-            <input type="text" className="form-input" value={product.material} onChange={(e) => onChange({ ...product, material: e.target.value })} placeholder="Ej: Microfibra Premium" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Estilo</label>
-            <input type="text" className="form-input" value={product.style} onChange={(e) => onChange({ ...product, style: e.target.value })} placeholder="Ej: Contemporáneo" />
-          </div>
-        </div>
-      </div>
-
-      {/* Pricing */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Precios y Stock</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.75rem' }}>
-          <div className="form-group">
-            <label className="form-label">Precio (Bs.) *</label>
-            <input type="number" className="form-input" required value={product.price} onChange={(e) => onChange({ ...product, price: Number(e.target.value) })} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Precio Original (Bs.)</label>
-            <input type="number" className="form-input" value={product.originalPrice} onChange={(e) => onChange({ ...product, originalPrice: Number(e.target.value) })} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Descuento (%)</label>
-            <input type="number" className="form-input" value={product.discount} onChange={(e) => onChange({ ...product, discount: Number(e.target.value) })} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Stock *</label>
-            <input type="number" className="form-input" required value={product.stockCount} onChange={(e) => onChange({ ...product, stockCount: Number(e.target.value) })} />
-          </div>
-        </div>
-      </div>
-
-      {/* Image */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Imagen</div>
-        <div className="form-group">
-          <label className="form-label">URL de la imagen principal</label>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <Image size={16} style={{ color: 'var(--text-muted)' }} />
-            <input type="text" className="form-input" value={product.images[0] || ''} onChange={(e) => onChange({ ...product, images: [e.target.value, ...product.images.slice(1)] })} placeholder="/images/RUTA/1.jpg o https://..." style={{ flex: 1 }} />
-          </div>
-          {product.images[0] && (
-            <img src={product.images[0]} alt="Preview" style={{ marginTop: '0.5rem', width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border-color)' }} />
-          )}
-        </div>
-      </div>
-
-      {/* Descriptions */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Descripciones</div>
-        <div className="form-group">
-          <label className="form-label">Descripción Corta</label>
-          <input type="text" className="form-input" value={product.shortDescription} onChange={(e) => onChange({ ...product, shortDescription: e.target.value })} placeholder="Una línea descripción del producto" />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Descripción Completa</label>
-          <textarea className="form-input" rows={3} value={product.fullDescription} onChange={(e) => onChange({ ...product, fullDescription: e.target.value })} placeholder="Descripción detallada del producto..." style={{ resize: 'vertical' }} />
-        </div>
-      </div>
-
-      {/* Badges & Status */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Estado y Badges</div>
-        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem' }}>
-            <input type="checkbox" checked={product.isOffer} onChange={(e) => onChange({ ...product, isOffer: e.target.checked })} />
-            En Oferta
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem' }}>
-            <input type="checkbox" checked={product.isNew} onChange={(e) => onChange({ ...product, isNew: e.target.checked })} />
-            Nuevo
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.88rem' }}>
-            <input type="checkbox" checked={product.isFeatured} onChange={(e) => onChange({ ...product, isFeatured: e.target.checked })} />
-            Destacado
-          </label>
-        </div>
-      </div>
-
-      {/* Warranty & Availability */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-          <div className="form-group">
-            <label className="form-label">Garantía</label>
-            <input type="text" className="form-input" value={product.warranty} onChange={(e) => onChange({ ...product, warranty: e.target.value })} placeholder="Ej: 5 Años Oficial" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Disponibilidad</label>
-            <select className="form-select" value={product.availability} onChange={(e) => onChange({ ...product, availability: e.target.value })}>
-              <option value="En Stock">En Stock</option>
-              <option value="Pre-orden">Pre-orden</option>
-              <option value="Agotado">Agotado</option>
-              <option value="Disponible bajo pedido">Disponible bajo pedido</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-        <button type="submit" className="btn btn-primary btn-sm">
-          <Save size={14} />
-          {title.includes('Crear') ? 'Crear Producto' : 'Guardar Cambios'}
-        </button>
-        <button type="button" className="btn btn-outline btn-sm" onClick={onCancel}>
-          <X size={14} />
-          Cancelar
-        </button>
-      </div>
-    </form>
-  );
 
   // ── Admin Dashboard ──
   return (
@@ -726,7 +739,8 @@ export default function AdminModal() {
                 onChange={setNewProd} 
                 onSubmit={handleCreateSubmit} 
                 onCancel={() => setIsCreating(false)} 
-                title="Crear Nuevo Producto" 
+                title="Crear Nuevo Producto"
+                isSaving={isSaving}
               />
             )}
 
@@ -737,7 +751,8 @@ export default function AdminModal() {
                 onChange={setEditingProduct} 
                 onSubmit={handleEditSubmit} 
                 onCancel={() => setEditingProduct(null)} 
-                title={`Editar: ${editingProduct.name}`} 
+                title={`Editar: ${editingProduct.name}`}
+                isSaving={isSaving}
               />
             )}
 
