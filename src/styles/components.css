@@ -3063,4 +3063,85 @@
   .form-textarea {
     font-size: 16px !important;
   }
+
+  /* ProductPage overflow fixes */
+  .pdp-grid {
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .pdp-info {
+    overflow: hidden;
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  .pdp-stock-status {
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+    display: inline-flex;
+    flex-wrap: wrap;
+  }
+
+  .pdp-action-buttons {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .pdp-action-buttons .btn {
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .pdp-tabs-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .pdp-tabs-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pdp-tab-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    padding: 0.5rem 0;
+  }
+
+  .pdp-tabs {
+    overflow: hidden;
+    padding: 1.25rem 1rem;
+  }
+
+  .pdp-price-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    overflow: hidden;
+  }
+
+  .pdp-current-price {
+    font-size: 1.6rem;
+  }
+
+  .pdp-title {
+    font-size: 1.3rem;
+    word-break: break-word;
+  }
+
+  .btn-outline[style*="width: 100%"] {
+    white-space: normal;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.78rem;
+    padding: 0.75rem 0.5rem;
+  }
 }
