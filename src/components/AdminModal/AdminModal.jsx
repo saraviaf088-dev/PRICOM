@@ -17,7 +17,7 @@ const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, 
     
     <div style={{ marginBottom: '1rem' }}>
       <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Información Básica</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+      <div className="admin-form-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
         <div className="form-group">
           <label className="form-label">Nombre *</label>
           <input type="text" className="form-input" required value={product.name} onChange={(e) => onChange({ ...product, name: e.target.value })} placeholder="Ej: Sealy Monterey" />
@@ -50,7 +50,7 @@ const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, 
 
     <div style={{ marginBottom: '1rem' }}>
       <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--color-celeste)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Precios y Stock</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.75rem' }}>
+      <div className="admin-form-grid-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.75rem' }}>
         <div className="form-group">
           <label className="form-label">Precio (Bs.) *</label>
           <input type="number" className="form-input" required value={product.price} onChange={(e) => onChange({ ...product, price: Number(e.target.value) || 0 })} />
@@ -119,7 +119,7 @@ const ProductForm = React.memo(({ product, onChange, onSubmit, onCancel, title, 
     </div>
 
     <div style={{ marginBottom: '1rem' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+      <div className="admin-form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
         <div className="form-group">
           <label className="form-label">Garantía</label>
           <input type="text" className="form-input" value={product.warranty} onChange={(e) => onChange({ ...product, warranty: e.target.value })} placeholder="Ej: 5 Años Oficial" />
@@ -477,7 +477,7 @@ export default function AdminModal({ fullPage = false }) {
       </div>
 
       {/* Tab Navigation */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
+        <div className="admin-tab-nav" style={{ display: 'flex', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)' }}>
           {[
             { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
             { id: 'orders', label: 'Pedidos', icon: ShoppingBag },
@@ -511,7 +511,7 @@ export default function AdminModal({ fullPage = false }) {
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
           <div style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="admin-dashboard-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
               <div style={{ backgroundColor: 'var(--bg-surface)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>Productos</div>
                 <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--color-celeste)' }}>{adminStats?.totalProducts || products.length}</div>
@@ -759,7 +759,7 @@ export default function AdminModal({ fullPage = false }) {
                         {expandedOrder === order.id && (
                           <tr>
                             <td colSpan={9} style={{ padding: '1rem 1.5rem', backgroundColor: 'var(--bg-secondary)' }}>
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', fontSize: '0.85rem' }}>
+                              <div className="admin-order-details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', fontSize: '0.85rem' }}>
                                 <div>
                                   <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: 'var(--color-celeste)' }}>Datos del Cliente</div>
                                   <div><strong>Nombre:</strong> {order.customerName}</div>

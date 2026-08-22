@@ -490,9 +490,9 @@ export default function UserAccountModal() {
         </div>
 
         {/* Account Body */}
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '400px' }}>
+        <div className="account-body-grid" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '400px' }}>
           {/* Sidebar Nav */}
-          <div style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem 1rem', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div className="account-sidebar" style={{ backgroundColor: 'var(--bg-secondary)', padding: '1.5rem 1rem', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
             <button 
               className={`btn btn-sm ${activeTab === 'perfil' ? 'btn-primary' : 'btn-outline'}`}
               style={{ justifyContent: 'flex-start', width: '100%' }}

@@ -40,6 +40,7 @@ export default function WhatsAppFloating() {
       {/* Interactive Quick-Chat Window */}
       {isOpen && (
         <div 
+          className="whatsapp-chat-window"
           style={{
             position: 'fixed',
             bottom: '5.5rem',

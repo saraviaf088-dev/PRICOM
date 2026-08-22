@@ -309,7 +309,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
+        <div className="checkout-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
           {/* Left Column - Forms */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* Contact & Address */}
@@ -373,7 +373,7 @@ export default function CheckoutPage() {
                 <Truck size={18} color="var(--color-celeste)" />
                 Tipo de Entrega
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="checkout-delivery-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <label style={{ padding: '1rem', border: `2px solid ${formData.deliveryType === 'home' ? 'var(--color-celeste)' : 'var(--border-color)'}`, borderRadius: 'var(--radius-md)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: formData.deliveryType === 'home' ? 'rgba(0,180,216,0.05)' : 'transparent' }}>
                   <input type="radio" name="deliveryType" value="home" checked={formData.deliveryType === 'home'} onChange={handleInputChange} style={{ display: 'none' }} />
                   <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${formData.deliveryType === 'home' ? 'var(--color-celeste)' : 'var(--border-color)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

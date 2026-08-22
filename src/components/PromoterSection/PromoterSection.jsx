@@ -72,7 +72,7 @@ export default function PromoterSection() {
         </div>
 
         {/* Benefits Grid */}
-        <div style={{ 
+        <div className="promoter-benefits-grid" style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
           gap: '1.5rem', 
@@ -137,7 +137,7 @@ export default function PromoterSection() {
         </div>
 
         {/* How It Works + Form */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
+        <div className="promoter-form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
           {/* How it works */}
           <div>
             <h3 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '1.5rem', color: 'var(--text-primary)' }}>

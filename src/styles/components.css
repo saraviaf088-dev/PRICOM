@@ -2814,3 +2814,236 @@
     justify-content: center;
   }
 }
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE: Admin Panel (fullPage admin)
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Admin dashboard stats grid: 4 cols → 2 cols */
+  .admin-dashboard-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Admin product form grids */
+  .admin-form-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-form-grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .admin-form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Admin tab navigation: scroll horizontal */
+  .admin-tab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-tab-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-tab-nav button {
+    white-space: nowrap;
+    flex: 0 0 auto;
+    padding: 0.75rem 0.6rem !important;
+    font-size: 0.78rem !important;
+  }
+
+  .admin-tab-nav button span {
+    display: none;
+  }
+
+  /* Admin expanded order details: 3 cols → 1 col */
+  .admin-order-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Admin header buttons: compact */
+  .admin-header-actions {
+    gap: 0.5rem !important;
+  }
+
+  .admin-header-actions span {
+    display: none;
+  }
+
+  /* Admin product table */
+  .admin-product-table {
+    font-size: 0.82rem;
+  }
+
+  .admin-product-table th,
+  .admin-product-table td {
+    padding: 0.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-form-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE: Checkout Page
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .checkout-main-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+
+  .checkout-sidebar {
+    order: -1;
+  }
+
+  .checkout-form-section {
+    padding: 1rem !important;
+  }
+
+  .checkout-delivery-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .checkout-payment-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .checkout-receipt-data-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE: User Account Modal
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .account-body-grid {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+  }
+
+  .account-sidebar {
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 0.75rem !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    gap: 0.5rem !important;
+  }
+
+  .account-sidebar button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 0.78rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .account-sidebar button span {
+    display: none;
+  }
+
+  .account-content {
+    padding: 1.25rem !important;
+  }
+
+  .account-modal-container {
+    max-width: 100% !important;
+    margin: 0.5rem !important;
+    max-height: 95vh !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-sidebar button span {
+    display: inline !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE: WhatsApp Floating Chat
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .whatsapp-chat-window {
+    width: calc(100vw - 2rem) !important;
+    right: 1rem !important;
+    bottom: 5rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE: Comparator Modal
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .comparator-modal-container {
+    max-width: 100% !important;
+    margin: 0.5rem !important;
+    max-height: 95vh !important;
+  }
+
+  .comparator-table td {
+    min-width: 160px !important;
+    font-size: 0.82rem;
+  }
+
+  .comparator-table th {
+    font-size: 0.78rem;
+    position: sticky;
+    left: 0;
+    background: var(--bg-surface);
+    z-index: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE: Promoter Section
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .promoter-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .promoter-benefits-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .promoter-commission-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   UTILITY: Prevent horizontal overflow on mobile
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .modal-container {
+    max-width: calc(100vw - 1rem) !important;
+    margin: 0.5rem !important;
+  }
+
+  .drawer-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .drawer-header h3 {
+    font-size: 1rem !important;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px !important;
+  }
+}

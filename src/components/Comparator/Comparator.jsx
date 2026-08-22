@@ -80,7 +80,7 @@ export default function Comparator() {
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setActiveModal(null)} role="dialog" aria-modal="true" aria-label="Comparador de productos">
           <div 
-            className="modal-container" 
+            className="modal-container comparator-modal-container"
             style={{ maxWidth: '1200px' }}
             onClick={(e) => e.stopPropagation()}
           >
