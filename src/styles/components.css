@@ -2041,6 +2041,23 @@
     font-size: 1.8rem;
   }
 
+  .pdp-price-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .pdp-discount-badge {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .pdp-stock-status {
+    max-width: 100%;
+    word-break: break-word;
+    white-space: normal;
+    font-size: 0.8rem;
+  }
+
   .modal-container {
     max-height: 95vh;
     border-radius: var(--radius-lg);
