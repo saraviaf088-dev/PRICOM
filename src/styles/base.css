@@ -26,7 +26,7 @@ html {
   text-rendering: optimizeLegibility;
   font-size: 16px;
   overflow-x: hidden;
-  max-width: 100vw;
+  width: 100%;
 }
 
 body {
@@ -38,14 +38,41 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   transition: background-color var(--transition-normal), color var(--transition-normal);
-  max-width: 100vw;
   width: 100%;
 }
 
 #root {
   overflow-x: hidden;
-  max-width: 100vw;
   width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL MOBILE OVERFLOW KILLER - Absolutely prevents any
+   horizontal overflow on mobile devices (max 1080px viewport)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1080px) {
+  html, body, #root {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+
+  /* Force ALL inline grids to not overflow - React uses camelCase */
+  [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  [style*="max-width"] {
+    max-width: 100% !important;
+  }
+
+  /* All direct children of root must not overflow */
+  #root > * {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
 }
 
 /* Typography Hierarchy */

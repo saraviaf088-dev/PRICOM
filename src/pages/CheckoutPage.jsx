@@ -296,29 +296,29 @@ export default function CheckoutPage() {
   return (
     <>
       <Header />
-      <main style={{ minHeight: '80vh', padding: '6rem 1.5rem 4rem', maxWidth: '1100px', margin: '0 auto' }}>
+      <main className="checkout-page-main">
         {/* Progress Bar */}
-        <div style={{ marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+        <div className="checkout-progress">
+          <div className="checkout-progress-labels">
             <span>Datos</span>
             <span>Entrega</span>
             <span>Pago</span>
           </div>
-          <div style={{ height: '4px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: '100%', background: 'linear-gradient(90deg, var(--color-celeste), var(--color-azul-oscuro))', borderRadius: '2px' }} />
+          <div className="checkout-progress-bar">
+            <div className="checkout-progress-fill" />
           </div>
         </div>
 
-        <div className="checkout-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
+        <div className="checkout-main-grid">
           {/* Left Column - Forms */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="checkout-forms-col">
             {/* Contact & Address */}
-            <section style={{ backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <section className="checkout-section">
+              <h3 className="checkout-section-title">
                 <User size={18} color="var(--color-celeste)" />
                 Datos de Contacto y Dirección
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <div className="checkout-form-grid">
                 <div>
                   <label className="form-label">Nombre completo *</label>
                   <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="form-input" placeholder="Tu nombre" required />

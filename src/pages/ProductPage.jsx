@@ -112,7 +112,7 @@ export default function ProductPage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: '5rem' }}>
+      <main className="pdp-page">
         <div className="pdp-grid">
           <div className="pdp-gallery">
             <div
@@ -155,18 +155,18 @@ export default function ProductPage() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.75rem 1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+            <div className="pdp-photo-note">
               <Layers size={18} color="var(--color-celeste)" />
               <span>Fotografías tomadas en ambientes reales de showrooms oficiales Sealy Bolivia.</span>
             </div>
           </div>
 
           <div className="pdp-info">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--color-celeste)', letterSpacing: '0.05em' }}>
+            <div className="pdp-info-header">
+              <span className="pdp-brand-label">
                 {product.brand} • {product.category}
               </span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="pdp-info-actions">
                 <button className={`card-action-btn ${isWish ? 'active' : ''}`} onClick={() => toggleWishlist(product.id)} title="Favorito">
                   <Heart size={16} fill={isWish ? '#ffffff' : 'none'} />
                 </button>
@@ -178,10 +178,10 @@ export default function ProductPage() {
 
             <h1 className="pdp-title">{product.name}</h1>
 
-            <div className="product-card-rating" style={{ marginBottom: '1rem' }}>
+            <div className="pdp-rating">
               <Star size={16} fill="currentColor" />
-              <span style={{ fontWeight: '700' }}>{product.rating}</span>
-              <span>({product.reviewCount} valoraciones de clientes en Bolivia)</span>
+              <span className="pdp-rating-value">{product.rating}</span>
+              <span className="pdp-rating-count">({product.reviewCount} valoraciones de clientes en Bolivia)</span>
             </div>
 
             <div className="pdp-price-row">
@@ -195,12 +195,12 @@ export default function ProductPage() {
               <span>{product.availability} ({product.stockCount} unidades disponibles)</span>
             </div>
 
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+            <p className="pdp-description">
               {product.shortDescription}
             </p>
 
             {product.colors && product.colors.length > 1 && (
-              <div style={{ marginBottom: '1.25rem' }}>
+              <div className="pdp-color-section">
                 <label className="form-label">Color seleccionado: <strong>{selectedColor}</strong></label>
                 <div className="color-swatches">
                   {product.colors.map((c, i) => (
@@ -210,8 +210,8 @@ export default function ProductPage() {
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>Cantidad:</span>
+            <div className="pdp-qty-row">
+              <span className="pdp-qty-label">Cantidad:</span>
               <div className="qty-control">
                 <button className="qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
                 <span className="qty-val">{quantity}</span>
@@ -230,16 +230,16 @@ export default function ProductPage() {
               </a>
             </div>
 
-            <button className="btn btn-outline" style={{ width: '100%', marginBottom: '1.5rem' }} onClick={() => addToCart(product, quantity, { color: selectedColor, material: selectedMaterial })}>
+            <button className="btn btn-outline pdp-add-cart-btn" onClick={() => addToCart(product, quantity, { color: selectedColor, material: selectedMaterial })}>
               <span>Agregar al Carrito de Compras</span>
             </button>
 
-            <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="pdp-warranty-info">
+              <div className="pdp-warranty-item">
                 <ShieldCheck size={16} color="var(--color-celeste)" />
                 <span>{product.warranty}</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="pdp-warranty-item">
                 <Truck size={16} color="var(--color-celeste)" />
                 <span>Armado gratuito en tu domicilio en Santa Cruz, La Paz y Cochabamba</span>
               </div>
