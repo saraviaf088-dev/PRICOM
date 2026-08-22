@@ -5,18 +5,25 @@
     {
       "src": "/iconos/logo pricom.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "/iconos/logo pricom.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "background_color": "#FFFFFF",
   "theme_color": "#051063",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "description": "Marketplace premium de muebles y sofás Sealy en Bolivia. Sofás cama, sillones reclinables, comedores y decoración."
+  "description": "Marketplace premium de muebles y sofás Sealy en Bolivia. Sofás cama, sillones reclinables, comedores y decoración.",
+  "categories": ["shopping", "business"],
+  "lang": "es",
+  "dir": "ltr"
 }

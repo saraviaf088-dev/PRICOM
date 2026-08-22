@@ -1,16 +1,25 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { usePWA } from '../../hooks/usePWA';
 import { Smartphone, Download, Sparkles, CheckCircle2, QrCode } from 'lucide-react';
 
 export default function AppDownloadSection() {
   const { showToast } = useApp();
+  const { isInstallable, installApp } = usePWA();
 
   const handleDownloadClick = (platform) => {
     showToast('Descarga de App', `Iniciando descarga para ${platform} (PRICOM App Móvil).`, 'info');
   };
 
-  const handleInstallPWA = () => {
-    showToast('Instalación PWA', 'Aplicación lista para anclar a tu pantalla de inicio.', 'success');
+  const handleInstallPWA = async () => {
+    if (isInstallable) {
+      const installed = await installApp();
+      if (installed) {
+        showToast('¡Instalada!', 'PRICOM se instaló en tu pantalla de inicio.', 'success');
+      }
+    } else {
+      showToast('Instalar PWA', 'Abre esta web en Chrome o Safari y usa "Agregar a pantalla de inicio" desde el menú del navegador.', 'info');
+    }
   };
 
   return (

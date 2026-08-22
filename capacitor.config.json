@@ -1,0 +1,20 @@
+{
+  "appId": "bo.pricom.app",
+  "appName": "PRICOM",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#051063",
+      "showSpinner": true,
+      "spinnerColor": "#009EFF"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#051063"
+    }
+  }
+}

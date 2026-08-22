@@ -7,6 +7,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminPage from './pages/AdminPage';
+import { OfflineBanner } from './components/PWA/InstallBanner';
 
 // ── Lazy loaded (only when needed) ──
 const CartDrawer = lazy(() => import('./components/CartDrawer/CartDrawer'));
@@ -41,7 +42,6 @@ import ProductGrid from './components/ProductGrid/ProductGrid';
 import OffersSection from './components/OffersSection/OffersSection';
 import InspirateSection from './components/InspirateSection/InspirateSection';
 import PromoterSection from './components/PromoterSection/PromoterSection';
-import AppDownloadSection from './components/AppDownloadSection/AppDownloadSection';
 import Footer from './components/Footer/Footer';
 import WhatsAppFloating from './components/WhatsAppFloating/WhatsAppFloating';
 import Comparator from './components/Comparator/Comparator';
@@ -57,7 +57,6 @@ function HomePage() {
       <OffersSection />
       <InspirateSection />
       <PromoterSection />
-      <AppDownloadSection />
       <Footer />
       <WhatsAppFloating />
       <Comparator />
@@ -91,6 +90,7 @@ export default function App() {
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
           <AppShell />
+          <OfflineBanner />
         </BrowserRouter>
       </AppProvider>
     </ErrorBoundary>
