@@ -430,6 +430,16 @@ export default function CheckoutPage() {
                   </label>
                 ))}
               </div>
+              {formData.paymentMethod === 'qr' && (
+                <div style={{ marginTop: '1rem', padding: '1.25rem', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+                  <p style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--color-azul-oscuro)', marginBottom: '0.75rem' }}>Escanea el código QR para pagar</p>
+                  <div style={{ display: 'inline-block', padding: '12px', background: '#fff', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)', marginBottom: '0.75rem' }}>
+                    <img src="/images/qr-pago.png" alt="Código QR de pago PRICOM" style={{ width: '200px', height: 'auto', display: 'block', maxWidth: '100%' }} />
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0 }}>Cuenta: <strong>1000242043</strong> (BNB)</p>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>Envía el comprobante por WhatsApp para confirmar tu pedido</p>
+                </div>
+              )}
             </section>
 
             {/* Notes */}
