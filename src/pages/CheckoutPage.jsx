@@ -272,7 +272,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div style={{ backgroundColor: 'rgba(0,180,216,0.08)', borderRadius: 'var(--radius-md)', padding: '0.85rem', fontSize: '0.8rem', textAlign: 'center', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  Recibirás un mensaje de WhatsApp con los detalles para coordinar el pago y la entrega.
+                  El envío a domicilio es <strong>pago contraentrega</strong>: realiza el pago del 50% ahora para confirmar tu pedido, y el 50% restante al entregarte tu compra.
                 </div>
               </div>
             </div>
